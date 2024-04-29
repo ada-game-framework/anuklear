@@ -1,0 +1,10 @@
+name = "anuklear"
+description = "Ada bindings to the Nuklear UI library."
+version = "0.1.0-dev"
+
+authors = ["Luke A. Guest"]
+maintainers = ["Luke A. Guest <laguest@archeia.com>"]
+maintainers-logins = ["Lucretia"]
+licenses = "MIT OR Apache-2.0 WITH LLVM-exception"
+website = ""
+tags = ["ui", "gui", "nuklear"]
