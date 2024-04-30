@@ -59,6 +59,8 @@ package Nuklear is
    --  unsupported macro: BOOL bool
    --  arg-macro: procedure foreach (c, ctx)
    --    for((c) := nk__begin(ctx); (c) /= 0; (c) := nk__next(ctx,c))
+   --  arg-macro: procedure draw_foreach (cmd, ctx, b)
+   --    for((cmd):=nk__draw_begin(ctx, b); (cmd)/=0; (cmd):=nk__draw_next(cmd, b, ctx))
    --  arg-macro: procedure tree_push (ctx, type, title, state)
    --    nk_tree_push_hashed(ctx, type, title, state, FILE_LINE,nk_strlen(NK_FILE_LINE),__LINE__)
    --  arg-macro: procedure tree_push_id (ctx, type, title, state, id)
@@ -78,6 +80,9 @@ package Nuklear is
    TEXTEDIT_UNDOSTATECOUNT : constant := 99;  --  ./Nuklear/nuklear.h:4339
 
    TEXTEDIT_UNDOCHARCOUNT : constant := 999;  --  ./Nuklear/nuklear.h:4343
+   --  unsupported macro: VERTEX_LAYOUT_END NK_VERTEX_ATTRIBUTE_COUNT,NK_FORMAT_COUNT,0
+   --  arg-macro: procedure draw_list_foreach (cmd, can, b)
+   --    for((cmd):=nk__draw_list_begin(can, b); (cmd)/=0; (cmd):=nk__draw_list_next(cmd, b, can))
 
    MAX_LAYOUT_ROW_TEMPLATE_COLUMNS : constant := 16;  --  ./Nuklear/nuklear.h:5383
 
@@ -446,12 +451,6 @@ package Nuklear is
   -- *
   -- * ===========================================================================  
 
-   type nk_draw_command is null record;   -- incomplete struct
-
-   type nk_draw_list is null record;   -- incomplete struct
-
-   type nk_draw_vertex_layout_element is null record;   -- incomplete struct
-
    type nk_style_slide is null record;   -- incomplete struct
 
    type nk_color is record
@@ -622,7 +621,7 @@ package Nuklear is
 
    type nk_plugin_copy is access procedure
         (arg1 : nk_handle;
-         arg2 : Interfaces.C.Strings.chars_ptr;
+         arg2 : Interfaces.C.char_array;
          arg3 : int)
    with Convention => C;  -- ./Nuklear/nuklear.h:506
 
@@ -707,6 +706,13 @@ package Nuklear is
   --///
   -- 
 
+   type nk_context;
+   type nk_user_font;
+   function init_default (arg1 : access nk_context; arg2 : access constant nk_user_font) return nk_bool  -- ./Nuklear/nuklear.h:584
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_init_default";
+
   --/// #### nk_init_fixed
   --/// Initializes a `nk_context` struct from single fixed size memory block
   --/// Should be used if you want complete control over nuklear's memory management.
@@ -731,8 +737,6 @@ package Nuklear is
   --/// Returns either `false(0)` on failure or `true(1)` on success.
   -- 
 
-   type nk_context;
-   type nk_user_font;
    function init_fixed
      (arg1 : access nk_context;
       memory : System.Address;
@@ -1107,7 +1111,7 @@ package Nuklear is
   --/// __g__       | UTF-32 unicode codepoint
   -- 
 
-   procedure input_glyph (arg1 : access nk_context; arg2 : Interfaces.C.Strings.chars_ptr)  -- ./Nuklear/nuklear.h:903
+   procedure input_glyph (arg1 : access nk_context; arg2 : Interfaces.C.char_array)  -- ./Nuklear/nuklear.h:903
    with Import => True, 
         Convention => C, 
         External_Name => "nk_input_glyph";
@@ -1403,6 +1407,7 @@ package Nuklear is
 
   -- coordinates to a white pixel in the texture   
   -- global alpha value  
+   type nk_draw_vertex_layout_element;
    type nk_convert_config is record
       global_alpha : aliased float;  -- ./Nuklear/nuklear.h:1175
       line_AA : aliased nk_anti_aliasing;  -- ./Nuklear/nuklear.h:1176
@@ -1512,6 +1517,16 @@ package Nuklear is
   --/// CONVERT_ELEMENT_BUFFER_FULL  | The provided buffer for storing indices is full or failed to allocate more memory
   -- 
 
+   function convert
+     (arg1 : access nk_context;
+      cmds : access nk_buffer;
+      vertices : access nk_buffer;
+      elements : access nk_buffer;
+      arg5 : access constant nk_convert_config) return nk_flags  -- ./Nuklear/nuklear.h:1261
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_convert";
+
   --/// #### nk__draw_begin
   --/// Returns a draw vertex command buffer iterator to iterate over the vertex draw command buffer
   --///
@@ -1526,6 +1541,12 @@ package Nuklear is
   --///
   --/// Returns vertex draw command pointer pointing to the first command inside the vertex draw command buffer
   -- 
+
+   type nk_draw_command;
+   function u_draw_begin (arg1 : access constant nk_context; arg2 : access constant nk_buffer) return access constant nk_draw_command  -- ./Nuklear/nuklear.h:1276
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk__draw_begin";
 
   --/// #### nk__draw_end
   --/// Returns the vertex draw command at the end of the vertex draw command buffer
@@ -1542,6 +1563,11 @@ package Nuklear is
   --/// Returns vertex draw command pointer pointing to the end of the last vertex draw command inside the vertex draw command buffer
   -- 
 
+   function u_draw_end (arg1 : access constant nk_context; arg2 : access constant nk_buffer) return access constant nk_draw_command  -- ./Nuklear/nuklear.h:1291
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk__draw_end";
+
   --/// #### nk__draw_next
   --/// Increments the vertex draw command buffer iterator
   --///
@@ -1557,6 +1583,14 @@ package Nuklear is
   --///
   --/// Returns vertex draw command pointer pointing to the end of the last vertex draw command inside the vertex draw command buffer
   -- 
+
+   function u_draw_next
+     (arg1 : access constant nk_draw_command;
+      arg2 : access constant nk_buffer;
+      arg3 : access constant nk_context) return access constant nk_draw_command  -- ./Nuklear/nuklear.h:1307
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk__draw_next";
 
   --/// #### nk_draw_foreach
   --/// Iterates over each vertex draw command inside a vertex draw command buffer
@@ -1754,7 +1788,7 @@ package Nuklear is
 
    function start
      (ctx : access nk_context;
-      title : Interfaces.C.Strings.chars_ptr;
+      title : Interfaces.C.char_array;
       bounds : nk_rect_t;
       flags : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:1501
    with Import => True, 
@@ -1783,8 +1817,8 @@ package Nuklear is
 
    function start_titled
      (ctx : access nk_context;
-      name : Interfaces.C.Strings.chars_ptr;
-      title : Interfaces.C.Strings.chars_ptr;
+      name : Interfaces.C.char_array;
+      title : Interfaces.C.char_array;
       bounds : nk_rect_t;
       flags : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:1521
    with Import => True, 
@@ -1826,7 +1860,7 @@ package Nuklear is
   -- 
 
    type nk_window;
-   function window_find (ctx : access nk_context; name : Interfaces.C.Strings.chars_ptr) return access nk_window  -- ./Nuklear/nuklear.h:1550
+   function window_find (ctx : access nk_context; name : Interfaces.C.char_array) return access nk_window  -- ./Nuklear/nuklear.h:1550
    with Import => True, 
         Convention => C, 
         External_Name => "nk_window_find";
@@ -2159,7 +2193,7 @@ package Nuklear is
   --/// found or is not minimized
   -- 
 
-   function window_is_collapsed (ctx : access nk_context; name : Interfaces.C.Strings.chars_ptr) return nk_bool  -- ./Nuklear/nuklear.h:1803
+   function window_is_collapsed (ctx : access nk_context; name : Interfaces.C.char_array) return nk_bool  -- ./Nuklear/nuklear.h:1803
    with Import => True, 
         Convention => C, 
         External_Name => "nk_window_is_collapsed";
@@ -2178,7 +2212,7 @@ package Nuklear is
   --/// Returns `true(1)` if current window was closed or `false(0)` window not found or not closed
   -- 
 
-   function window_is_closed (arg1 : access nk_context; arg2 : Interfaces.C.Strings.chars_ptr) return nk_bool  -- ./Nuklear/nuklear.h:1817
+   function window_is_closed (arg1 : access nk_context; arg2 : Interfaces.C.char_array) return nk_bool  -- ./Nuklear/nuklear.h:1817
    with Import => True, 
         Convention => C, 
         External_Name => "nk_window_is_closed";
@@ -2197,7 +2231,7 @@ package Nuklear is
   --/// Returns `true(1)` if current window is hidden or `false(0)` window not found or visible
   -- 
 
-   function window_is_hidden (arg1 : access nk_context; arg2 : Interfaces.C.Strings.chars_ptr) return nk_bool  -- ./Nuklear/nuklear.h:1831
+   function window_is_hidden (arg1 : access nk_context; arg2 : Interfaces.C.char_array) return nk_bool  -- ./Nuklear/nuklear.h:1831
    with Import => True, 
         Convention => C, 
         External_Name => "nk_window_is_hidden";
@@ -2216,7 +2250,7 @@ package Nuklear is
   --/// Returns `true(1)` if current window is active or `false(0)` window not found or not active
   -- 
 
-   function window_is_active (arg1 : access nk_context; arg2 : Interfaces.C.Strings.chars_ptr) return nk_bool  -- ./Nuklear/nuklear.h:1845
+   function window_is_active (arg1 : access nk_context; arg2 : Interfaces.C.char_array) return nk_bool  -- ./Nuklear/nuklear.h:1845
    with Import => True, 
         Convention => C, 
         External_Name => "nk_window_is_active";
@@ -2274,7 +2308,7 @@ package Nuklear is
 
    procedure window_set_bounds
      (arg1 : access nk_context;
-      name : Interfaces.C.Strings.chars_ptr;
+      name : Interfaces.C.char_array;
       bounds : nk_rect_t)  -- ./Nuklear/nuklear.h:1886
    with Import => True, 
         Convention => C, 
@@ -2295,7 +2329,7 @@ package Nuklear is
 
    procedure window_set_position
      (arg1 : access nk_context;
-      name : Interfaces.C.Strings.chars_ptr;
+      name : Interfaces.C.char_array;
       pos : nk_vec2_t)  -- ./Nuklear/nuklear.h:1899
    with Import => True, 
         Convention => C, 
@@ -2316,7 +2350,7 @@ package Nuklear is
 
    procedure window_set_size
      (arg1 : access nk_context;
-      name : Interfaces.C.Strings.chars_ptr;
+      name : Interfaces.C.char_array;
       arg3 : nk_vec2_t)  -- ./Nuklear/nuklear.h:1912
    with Import => True, 
         Convention => C, 
@@ -2334,7 +2368,7 @@ package Nuklear is
   --/// __name__    | Identifier of the window to set focus on
   -- 
 
-   procedure window_set_focus (arg1 : access nk_context; name : Interfaces.C.Strings.chars_ptr)  -- ./Nuklear/nuklear.h:1924
+   procedure window_set_focus (arg1 : access nk_context; name : Interfaces.C.char_array)  -- ./Nuklear/nuklear.h:1924
    with Import => True, 
         Convention => C, 
         External_Name => "nk_window_set_focus";
@@ -2375,7 +2409,7 @@ package Nuklear is
   --/// __name__    | Identifier of the window to close
   -- 
 
-   procedure window_close (ctx : access nk_context; name : Interfaces.C.Strings.chars_ptr)  -- ./Nuklear/nuklear.h:1952
+   procedure window_close (ctx : access nk_context; name : Interfaces.C.char_array)  -- ./Nuklear/nuklear.h:1952
    with Import => True, 
         Convention => C, 
         External_Name => "nk_window_close";
@@ -2395,7 +2429,7 @@ package Nuklear is
 
    procedure window_collapse
      (arg1 : access nk_context;
-      name : Interfaces.C.Strings.chars_ptr;
+      name : Interfaces.C.char_array;
       state : nk_collapse_states)  -- ./Nuklear/nuklear.h:1965
    with Import => True, 
         Convention => C, 
@@ -2417,7 +2451,7 @@ package Nuklear is
 
    procedure window_collapse_if
      (arg1 : access nk_context;
-      name : Interfaces.C.Strings.chars_ptr;
+      name : Interfaces.C.char_array;
       arg3 : nk_collapse_states;
       cond : int)  -- ./Nuklear/nuklear.h:1979
    with Import => True, 
@@ -2439,7 +2473,7 @@ package Nuklear is
 
    procedure window_show
      (arg1 : access nk_context;
-      name : Interfaces.C.Strings.chars_ptr;
+      name : Interfaces.C.char_array;
       arg3 : nk_show_states)  -- ./Nuklear/nuklear.h:1992
    with Import => True, 
         Convention => C, 
@@ -2461,7 +2495,7 @@ package Nuklear is
 
    procedure window_show_if
      (arg1 : access nk_context;
-      name : Interfaces.C.Strings.chars_ptr;
+      name : Interfaces.C.char_array;
       arg3 : nk_show_states;
       cond : int)  -- ./Nuklear/nuklear.h:2006
    with Import => True, 
@@ -3335,7 +3369,7 @@ package Nuklear is
 
    function group_begin
      (arg1 : access nk_context;
-      title : Interfaces.C.Strings.chars_ptr;
+      title : Interfaces.C.char_array;
       arg3 : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:2726
    with Import => True, 
         Convention => C, 
@@ -3359,8 +3393,8 @@ package Nuklear is
 
    function group_begin_titled
      (arg1 : access nk_context;
-      name : Interfaces.C.Strings.chars_ptr;
-      title : Interfaces.C.Strings.chars_ptr;
+      name : Interfaces.C.char_array;
+      title : Interfaces.C.char_array;
       arg4 : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:2742
    with Import => True, 
         Convention => C, 
@@ -3404,7 +3438,7 @@ package Nuklear is
      (arg1 : access nk_context;
       x_offset : access nk_uint;
       y_offset : access nk_uint;
-      title : Interfaces.C.Strings.chars_ptr;
+      title : Interfaces.C.char_array;
       flags : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:2771
    with Import => True, 
         Convention => C, 
@@ -3430,7 +3464,7 @@ package Nuklear is
    function group_scrolled_begin
      (arg1 : access nk_context;
       off : access nk_scroll;
-      title : Interfaces.C.Strings.chars_ptr;
+      title : Interfaces.C.char_array;
       arg4 : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:2788
    with Import => True, 
         Convention => C, 
@@ -3468,7 +3502,7 @@ package Nuklear is
 
    procedure group_get_scroll
      (arg1 : access nk_context;
-      id : Interfaces.C.Strings.chars_ptr;
+      id : Interfaces.C.char_array;
       x_offset : access nk_uint;
       y_offset : access nk_uint)  -- ./Nuklear/nuklear.h:2813
    with Import => True, 
@@ -3491,7 +3525,7 @@ package Nuklear is
 
    procedure group_set_scroll
      (arg1 : access nk_context;
-      id : Interfaces.C.Strings.chars_ptr;
+      id : Interfaces.C.char_array;
       x_offset : nk_uint;
       y_offset : nk_uint)  -- ./Nuklear/nuklear.h:2827
    with Import => True, 
@@ -3631,9 +3665,9 @@ package Nuklear is
    function tree_push_hashed
      (arg1 : access nk_context;
       arg2 : nk_tree_type;
-      title : Interfaces.C.Strings.chars_ptr;
+      title : Interfaces.C.char_array;
       initial_state : nk_collapse_states;
-      hash : Interfaces.C.Strings.chars_ptr;
+      hash : Interfaces.C.char_array;
       len : int;
       seed : int) return nk_bool  -- ./Nuklear/nuklear.h:2956
    with Import => True, 
@@ -3708,9 +3742,9 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : nk_tree_type;
       arg3 : nk_image_t;
-      title : Interfaces.C.Strings.chars_ptr;
+      title : Interfaces.C.char_array;
       initial_state : nk_collapse_states;
-      hash : Interfaces.C.Strings.chars_ptr;
+      hash : Interfaces.C.char_array;
       len : int;
       seed : int) return nk_bool  -- ./Nuklear/nuklear.h:3020
    with Import => True, 
@@ -3752,7 +3786,7 @@ package Nuklear is
    function tree_state_push
      (arg1 : access nk_context;
       arg2 : nk_tree_type;
-      title : Interfaces.C.Strings.chars_ptr;
+      title : Interfaces.C.char_array;
       state : access nk_collapse_states) return nk_bool  -- ./Nuklear/nuklear.h:3047
    with Import => True, 
         Convention => C, 
@@ -3779,7 +3813,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : nk_tree_type;
       arg3 : nk_image_t;
-      title : Interfaces.C.Strings.chars_ptr;
+      title : Interfaces.C.char_array;
       state : access nk_collapse_states) return nk_bool  -- ./Nuklear/nuklear.h:3064
    with Import => True, 
         Convention => C, 
@@ -3804,10 +3838,10 @@ package Nuklear is
    function tree_element_push_hashed
      (arg1 : access nk_context;
       arg2 : nk_tree_type;
-      title : Interfaces.C.Strings.chars_ptr;
+      title : Interfaces.C.char_array;
       initial_state : nk_collapse_states;
       selected : access nk_bool;
-      hash : Interfaces.C.Strings.chars_ptr;
+      hash : Interfaces.C.char_array;
       len : int;
       seed : int) return nk_bool  -- ./Nuklear/nuklear.h:3079
    with Import => True, 
@@ -3818,10 +3852,10 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : nk_tree_type;
       arg3 : nk_image_t;
-      title : Interfaces.C.Strings.chars_ptr;
+      title : Interfaces.C.char_array;
       initial_state : nk_collapse_states;
       selected : access nk_bool;
-      hash : Interfaces.C.Strings.chars_ptr;
+      hash : Interfaces.C.char_array;
       len : int;
       seed : int) return nk_bool  -- ./Nuklear/nuklear.h:3080
    with Import => True, 
@@ -3855,7 +3889,7 @@ package Nuklear is
    function list_view_begin
      (arg1 : access nk_context;
       c_out : access nk_list_view;
-      id : Interfaces.C.Strings.chars_ptr;
+      id : Interfaces.C.char_array;
       arg4 : nk_flags;
       row_height : int;
       row_count : int) return nk_bool  -- ./Nuklear/nuklear.h:3097
@@ -3994,7 +4028,7 @@ package Nuklear is
 
    procedure text
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int;
       arg4 : nk_flags)  -- ./Nuklear/nuklear.h:3151
    with Import => True, 
@@ -4003,7 +4037,7 @@ package Nuklear is
 
    procedure text_colored
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int;
       arg4 : nk_flags;
       arg5 : nk_color)  -- ./Nuklear/nuklear.h:3152
@@ -4013,7 +4047,7 @@ package Nuklear is
 
    procedure text_wrap
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int)  -- ./Nuklear/nuklear.h:3153
    with Import => True, 
         Convention => C, 
@@ -4021,7 +4055,7 @@ package Nuklear is
 
    procedure text_wrap_colored
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int;
       arg4 : nk_color)  -- ./Nuklear/nuklear.h:3154
    with Import => True, 
@@ -4030,7 +4064,7 @@ package Nuklear is
 
    procedure label
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       align : nk_flags)  -- ./Nuklear/nuklear.h:3155
    with Import => True, 
         Convention => C, 
@@ -4038,21 +4072,21 @@ package Nuklear is
 
    procedure label_colored
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       align : nk_flags;
       arg4 : nk_color)  -- ./Nuklear/nuklear.h:3156
    with Import => True, 
         Convention => C, 
         External_Name => "nk_label_colored";
 
-   procedure label_wrap (arg1 : access nk_context; arg2 : Interfaces.C.Strings.chars_ptr)  -- ./Nuklear/nuklear.h:3157
+   procedure label_wrap (arg1 : access nk_context; arg2 : Interfaces.C.char_array)  -- ./Nuklear/nuklear.h:3157
    with Import => True, 
         Convention => C, 
         External_Name => "nk_label_wrap";
 
    procedure label_colored_wrap
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : nk_color)  -- ./Nuklear/nuklear.h:3158
    with Import => True, 
         Convention => C, 
@@ -4079,13 +4113,13 @@ package Nuklear is
 
    function button_text
      (arg1 : access nk_context;
-      title : Interfaces.C.Strings.chars_ptr;
+      title : Interfaces.C.char_array;
       len : int) return nk_bool  -- ./Nuklear/nuklear.h:3183
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_text";
 
-   function button_label (arg1 : access nk_context; title : Interfaces.C.Strings.chars_ptr) return nk_bool  -- ./Nuklear/nuklear.h:3184
+   function button_label (arg1 : access nk_context; title : Interfaces.C.char_array) return nk_bool  -- ./Nuklear/nuklear.h:3184
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_label";
@@ -4108,7 +4142,7 @@ package Nuklear is
    function button_symbol_label
      (arg1 : access nk_context;
       arg2 : nk_symbol_type;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       text_alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3188
    with Import => True, 
         Convention => C, 
@@ -4117,7 +4151,7 @@ package Nuklear is
    function button_symbol_text
      (arg1 : access nk_context;
       arg2 : nk_symbol_type;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       arg4 : int;
       alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3189
    with Import => True, 
@@ -4127,7 +4161,7 @@ package Nuklear is
    function button_image_label
      (arg1 : access nk_context;
       img : nk_image_t;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       text_alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3190
    with Import => True, 
         Convention => C, 
@@ -4136,7 +4170,7 @@ package Nuklear is
    function button_image_text
      (arg1 : access nk_context;
       img : nk_image_t;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       arg4 : int;
       alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3191
    with Import => True, 
@@ -4147,7 +4181,7 @@ package Nuklear is
    function button_text_styled
      (arg1 : access nk_context;
       arg2 : access constant nk_style_button;
-      title : Interfaces.C.Strings.chars_ptr;
+      title : Interfaces.C.char_array;
       len : int) return nk_bool  -- ./Nuklear/nuklear.h:3192
    with Import => True, 
         Convention => C, 
@@ -4156,7 +4190,7 @@ package Nuklear is
    function button_label_styled
      (arg1 : access nk_context;
       arg2 : access constant nk_style_button;
-      title : Interfaces.C.Strings.chars_ptr) return nk_bool  -- ./Nuklear/nuklear.h:3193
+      title : Interfaces.C.char_array) return nk_bool  -- ./Nuklear/nuklear.h:3193
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_label_styled";
@@ -4181,7 +4215,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : access constant nk_style_button;
       arg3 : nk_symbol_type;
-      arg4 : Interfaces.C.Strings.chars_ptr;
+      arg4 : Interfaces.C.char_array;
       arg5 : int;
       alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3196
    with Import => True, 
@@ -4192,7 +4226,7 @@ package Nuklear is
      (ctx : access nk_context;
       style : access constant nk_style_button;
       symbol : nk_symbol_type;
-      title : Interfaces.C.Strings.chars_ptr;
+      title : Interfaces.C.char_array;
       align : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3197
    with Import => True, 
         Convention => C, 
@@ -4202,7 +4236,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : access constant nk_style_button;
       img : nk_image_t;
-      arg4 : Interfaces.C.Strings.chars_ptr;
+      arg4 : Interfaces.C.char_array;
       text_alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3198
    with Import => True, 
         Convention => C, 
@@ -4212,7 +4246,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : access constant nk_style_button;
       img : nk_image_t;
-      arg4 : Interfaces.C.Strings.chars_ptr;
+      arg4 : Interfaces.C.char_array;
       arg5 : int;
       alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3199
    with Import => True, 
@@ -4242,7 +4276,7 @@ package Nuklear is
 
    function check_label
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       active : nk_bool) return nk_bool  -- ./Nuklear/nuklear.h:3208
    with Import => True, 
         Convention => C, 
@@ -4250,7 +4284,7 @@ package Nuklear is
 
    function check_text
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int;
       active : nk_bool) return nk_bool  -- ./Nuklear/nuklear.h:3209
    with Import => True, 
@@ -4259,7 +4293,7 @@ package Nuklear is
 
    function check_text_align
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int;
       active : nk_bool;
       widget_alignment : nk_flags;
@@ -4270,7 +4304,7 @@ package Nuklear is
 
    function check_flags_label
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       flags : unsigned;
       value : unsigned) return unsigned  -- ./Nuklear/nuklear.h:3211
    with Import => True, 
@@ -4279,7 +4313,7 @@ package Nuklear is
 
    function check_flags_text
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int;
       flags : unsigned;
       value : unsigned) return unsigned  -- ./Nuklear/nuklear.h:3212
@@ -4289,7 +4323,7 @@ package Nuklear is
 
    function checkbox_label
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       active : access nk_bool) return nk_bool  -- ./Nuklear/nuklear.h:3213
    with Import => True, 
         Convention => C, 
@@ -4297,7 +4331,7 @@ package Nuklear is
 
    function checkbox_label_align
      (ctx : access nk_context;
-      label : Interfaces.C.Strings.chars_ptr;
+      label : Interfaces.C.char_array;
       active : access nk_bool;
       widget_alignment : nk_flags;
       text_alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3214
@@ -4307,7 +4341,7 @@ package Nuklear is
 
    function checkbox_text
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int;
       active : access nk_bool) return nk_bool  -- ./Nuklear/nuklear.h:3215
    with Import => True, 
@@ -4316,7 +4350,7 @@ package Nuklear is
 
    function checkbox_text_align
      (ctx : access nk_context;
-      text : Interfaces.C.Strings.chars_ptr;
+      text : Interfaces.C.char_array;
       len : int;
       active : access nk_bool;
       widget_alignment : nk_flags;
@@ -4327,7 +4361,7 @@ package Nuklear is
 
    function checkbox_flags_label
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       flags : access unsigned;
       value : unsigned) return nk_bool  -- ./Nuklear/nuklear.h:3217
    with Import => True, 
@@ -4336,7 +4370,7 @@ package Nuklear is
 
    function checkbox_flags_text
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int;
       flags : access unsigned;
       value : unsigned) return nk_bool  -- ./Nuklear/nuklear.h:3218
@@ -4352,7 +4386,7 @@ package Nuklear is
 
    function radio_label
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       active : access nk_bool) return nk_bool  -- ./Nuklear/nuklear.h:3224
    with Import => True, 
         Convention => C, 
@@ -4360,7 +4394,7 @@ package Nuklear is
 
    function radio_label_align
      (ctx : access nk_context;
-      label : Interfaces.C.Strings.chars_ptr;
+      label : Interfaces.C.char_array;
       active : access nk_bool;
       widget_alignment : nk_flags;
       text_alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3225
@@ -4370,7 +4404,7 @@ package Nuklear is
 
    function radio_text
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int;
       active : access nk_bool) return nk_bool  -- ./Nuklear/nuklear.h:3226
    with Import => True, 
@@ -4379,7 +4413,7 @@ package Nuklear is
 
    function radio_text_align
      (ctx : access nk_context;
-      text : Interfaces.C.Strings.chars_ptr;
+      text : Interfaces.C.char_array;
       len : int;
       active : access nk_bool;
       widget_alignment : nk_flags;
@@ -4390,7 +4424,7 @@ package Nuklear is
 
    function option_label
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       active : nk_bool) return nk_bool  -- ./Nuklear/nuklear.h:3228
    with Import => True, 
         Convention => C, 
@@ -4398,7 +4432,7 @@ package Nuklear is
 
    function option_label_align
      (ctx : access nk_context;
-      label : Interfaces.C.Strings.chars_ptr;
+      label : Interfaces.C.char_array;
       active : nk_bool;
       widget_alignment : nk_flags;
       text_alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3229
@@ -4408,7 +4442,7 @@ package Nuklear is
 
    function option_text
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int;
       active : nk_bool) return nk_bool  -- ./Nuklear/nuklear.h:3230
    with Import => True, 
@@ -4417,7 +4451,7 @@ package Nuklear is
 
    function option_text_align
      (ctx : access nk_context;
-      text : Interfaces.C.Strings.chars_ptr;
+      text : Interfaces.C.char_array;
       len : int;
       is_active : nk_bool;
       widget_alignment : nk_flags;
@@ -4434,7 +4468,7 @@ package Nuklear is
 
    function selectable_label
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       align : nk_flags;
       value : access nk_bool) return nk_bool  -- ./Nuklear/nuklear.h:3237
    with Import => True, 
@@ -4443,7 +4477,7 @@ package Nuklear is
 
    function selectable_text
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int;
       align : nk_flags;
       value : access nk_bool) return nk_bool  -- ./Nuklear/nuklear.h:3238
@@ -4454,7 +4488,7 @@ package Nuklear is
    function selectable_image_label
      (arg1 : access nk_context;
       arg2 : nk_image_t;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       align : nk_flags;
       value : access nk_bool) return nk_bool  -- ./Nuklear/nuklear.h:3239
    with Import => True, 
@@ -4464,7 +4498,7 @@ package Nuklear is
    function selectable_image_text
      (arg1 : access nk_context;
       arg2 : nk_image_t;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       arg4 : int;
       align : nk_flags;
       value : access nk_bool) return nk_bool  -- ./Nuklear/nuklear.h:3240
@@ -4475,7 +4509,7 @@ package Nuklear is
    function selectable_symbol_label
      (arg1 : access nk_context;
       arg2 : nk_symbol_type;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       align : nk_flags;
       value : access nk_bool) return nk_bool  -- ./Nuklear/nuklear.h:3241
    with Import => True, 
@@ -4485,7 +4519,7 @@ package Nuklear is
    function selectable_symbol_text
      (arg1 : access nk_context;
       arg2 : nk_symbol_type;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       arg4 : int;
       align : nk_flags;
       value : access nk_bool) return nk_bool  -- ./Nuklear/nuklear.h:3242
@@ -4495,7 +4529,7 @@ package Nuklear is
 
    function select_label
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       align : nk_flags;
       value : nk_bool) return nk_bool  -- ./Nuklear/nuklear.h:3244
    with Import => True, 
@@ -4504,7 +4538,7 @@ package Nuklear is
 
    function select_text
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int;
       align : nk_flags;
       value : nk_bool) return nk_bool  -- ./Nuklear/nuklear.h:3245
@@ -4515,7 +4549,7 @@ package Nuklear is
    function select_image_label
      (arg1 : access nk_context;
       arg2 : nk_image_t;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       align : nk_flags;
       value : nk_bool) return nk_bool  -- ./Nuklear/nuklear.h:3246
    with Import => True, 
@@ -4525,7 +4559,7 @@ package Nuklear is
    function select_image_text
      (arg1 : access nk_context;
       arg2 : nk_image_t;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       arg4 : int;
       align : nk_flags;
       value : nk_bool) return nk_bool  -- ./Nuklear/nuklear.h:3247
@@ -4536,7 +4570,7 @@ package Nuklear is
    function select_symbol_label
      (arg1 : access nk_context;
       arg2 : nk_symbol_type;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       align : nk_flags;
       value : nk_bool) return nk_bool  -- ./Nuklear/nuklear.h:3248
    with Import => True, 
@@ -4546,7 +4580,7 @@ package Nuklear is
    function select_symbol_text
      (arg1 : access nk_context;
       arg2 : nk_symbol_type;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       arg4 : int;
       align : nk_flags;
       value : nk_bool) return nk_bool  -- ./Nuklear/nuklear.h:3249
@@ -4746,7 +4780,7 @@ package Nuklear is
 
    procedure property_int
      (arg1 : access nk_context;
-      name : Interfaces.C.Strings.chars_ptr;
+      name : Interfaces.C.char_array;
       min : int;
       val : access int;
       max : int;
@@ -4779,7 +4813,7 @@ package Nuklear is
 
    procedure property_float
      (arg1 : access nk_context;
-      name : Interfaces.C.Strings.chars_ptr;
+      name : Interfaces.C.char_array;
       min : float;
       val : access float;
       max : float;
@@ -4812,7 +4846,7 @@ package Nuklear is
 
    procedure property_double
      (arg1 : access nk_context;
-      name : Interfaces.C.Strings.chars_ptr;
+      name : Interfaces.C.char_array;
       min : double;
       val : access double;
       max : double;
@@ -4847,7 +4881,7 @@ package Nuklear is
 
    function propertyi
      (arg1 : access nk_context;
-      name : Interfaces.C.Strings.chars_ptr;
+      name : Interfaces.C.char_array;
       min : int;
       val : int;
       max : int;
@@ -4882,7 +4916,7 @@ package Nuklear is
 
    function propertyf
      (arg1 : access nk_context;
-      name : Interfaces.C.Strings.chars_ptr;
+      name : Interfaces.C.char_array;
       min : float;
       val : float;
       max : float;
@@ -4917,7 +4951,7 @@ package Nuklear is
 
    function propertyd
      (arg1 : access nk_context;
-      name : Interfaces.C.Strings.chars_ptr;
+      name : Interfaces.C.char_array;
       min : double;
       val : double;
       max : double;
@@ -4969,7 +5003,7 @@ package Nuklear is
    function edit_string
      (arg1 : access nk_context;
       arg2 : nk_flags;
-      buffer : Interfaces.C.Strings.chars_ptr;
+      buffer : Interfaces.C.char_array;
       len : access int;
       max : int;
       arg6 : nk_plugin_filter) return nk_flags  -- ./Nuklear/nuklear.h:3516
@@ -4980,7 +5014,7 @@ package Nuklear is
    function edit_string_zero_terminated
      (arg1 : access nk_context;
       arg2 : nk_flags;
-      buffer : Interfaces.C.Strings.chars_ptr;
+      buffer : Interfaces.C.char_array;
       max : int;
       arg5 : nk_plugin_filter) return nk_flags  -- ./Nuklear/nuklear.h:3517
    with Import => True, 
@@ -5104,7 +5138,7 @@ package Nuklear is
    function popup_begin
      (arg1 : access nk_context;
       arg2 : nk_popup_type;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       arg4 : nk_flags;
       bounds : nk_rect_t) return nk_bool  -- ./Nuklear/nuklear.h:3540
    with Import => True, 
@@ -5156,7 +5190,7 @@ package Nuklear is
 
    function combo_separator
      (arg1 : access nk_context;
-      items_separated_by_separator : Interfaces.C.Strings.chars_ptr;
+      items_separated_by_separator : Interfaces.C.char_array;
       separator : int;
       selected : int;
       count : int;
@@ -5168,7 +5202,7 @@ package Nuklear is
 
    function combo_string
      (arg1 : access nk_context;
-      items_separated_by_zeros : Interfaces.C.Strings.chars_ptr;
+      items_separated_by_zeros : Interfaces.C.char_array;
       selected : int;
       count : int;
       item_height : int;
@@ -5205,7 +5239,7 @@ package Nuklear is
 
    procedure combobox_string
      (arg1 : access nk_context;
-      items_separated_by_zeros : Interfaces.C.Strings.chars_ptr;
+      items_separated_by_zeros : Interfaces.C.char_array;
       selected : access int;
       count : int;
       item_height : int;
@@ -5216,7 +5250,7 @@ package Nuklear is
 
    procedure combobox_separator
      (arg1 : access nk_context;
-      items_separated_by_separator : Interfaces.C.Strings.chars_ptr;
+      items_separated_by_separator : Interfaces.C.char_array;
       separator : int;
       selected : access int;
       count : int;
@@ -5249,7 +5283,7 @@ package Nuklear is
 
    function combo_begin_text
      (arg1 : access nk_context;
-      selected : Interfaces.C.Strings.chars_ptr;
+      selected : Interfaces.C.char_array;
       arg3 : int;
       size : nk_vec2_t) return nk_bool  -- ./Nuklear/nuklear.h:3563
    with Import => True, 
@@ -5258,7 +5292,7 @@ package Nuklear is
 
    function combo_begin_label
      (arg1 : access nk_context;
-      selected : Interfaces.C.Strings.chars_ptr;
+      selected : Interfaces.C.char_array;
       size : nk_vec2_t) return nk_bool  -- ./Nuklear/nuklear.h:3564
    with Import => True, 
         Convention => C, 
@@ -5282,7 +5316,7 @@ package Nuklear is
 
    function combo_begin_symbol_label
      (arg1 : access nk_context;
-      selected : Interfaces.C.Strings.chars_ptr;
+      selected : Interfaces.C.char_array;
       arg3 : nk_symbol_type;
       size : nk_vec2_t) return nk_bool  -- ./Nuklear/nuklear.h:3567
    with Import => True, 
@@ -5291,7 +5325,7 @@ package Nuklear is
 
    function combo_begin_symbol_text
      (arg1 : access nk_context;
-      selected : Interfaces.C.Strings.chars_ptr;
+      selected : Interfaces.C.char_array;
       arg3 : int;
       arg4 : nk_symbol_type;
       size : nk_vec2_t) return nk_bool  -- ./Nuklear/nuklear.h:3568
@@ -5309,7 +5343,7 @@ package Nuklear is
 
    function combo_begin_image_label
      (arg1 : access nk_context;
-      selected : Interfaces.C.Strings.chars_ptr;
+      selected : Interfaces.C.char_array;
       arg3 : nk_image_t;
       size : nk_vec2_t) return nk_bool  -- ./Nuklear/nuklear.h:3570
    with Import => True, 
@@ -5318,7 +5352,7 @@ package Nuklear is
 
    function combo_begin_image_text
      (arg1 : access nk_context;
-      selected : Interfaces.C.Strings.chars_ptr;
+      selected : Interfaces.C.char_array;
       arg3 : int;
       arg4 : nk_image_t;
       size : nk_vec2_t) return nk_bool  -- ./Nuklear/nuklear.h:3571
@@ -5328,7 +5362,7 @@ package Nuklear is
 
    function combo_item_label
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3572
    with Import => True, 
         Convention => C, 
@@ -5336,7 +5370,7 @@ package Nuklear is
 
    function combo_item_text
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int;
       alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3573
    with Import => True, 
@@ -5346,7 +5380,7 @@ package Nuklear is
    function combo_item_image_label
      (arg1 : access nk_context;
       arg2 : nk_image_t;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3574
    with Import => True, 
         Convention => C, 
@@ -5355,7 +5389,7 @@ package Nuklear is
    function combo_item_image_text
      (arg1 : access nk_context;
       arg2 : nk_image_t;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       arg4 : int;
       alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3575
    with Import => True, 
@@ -5365,7 +5399,7 @@ package Nuklear is
    function combo_item_symbol_label
      (arg1 : access nk_context;
       arg2 : nk_symbol_type;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3576
    with Import => True, 
         Convention => C, 
@@ -5374,7 +5408,7 @@ package Nuklear is
    function combo_item_symbol_text
      (arg1 : access nk_context;
       arg2 : nk_symbol_type;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       arg4 : int;
       alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3577
    with Import => True, 
@@ -5408,7 +5442,7 @@ package Nuklear is
 
    function contextual_item_text
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int;
       align : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3586
    with Import => True, 
@@ -5417,7 +5451,7 @@ package Nuklear is
 
    function contextual_item_label
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       align : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3587
    with Import => True, 
         Convention => C, 
@@ -5426,7 +5460,7 @@ package Nuklear is
    function contextual_item_image_label
      (arg1 : access nk_context;
       arg2 : nk_image_t;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3588
    with Import => True, 
         Convention => C, 
@@ -5435,7 +5469,7 @@ package Nuklear is
    function contextual_item_image_text
      (arg1 : access nk_context;
       arg2 : nk_image_t;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       len : int;
       alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3589
    with Import => True, 
@@ -5445,7 +5479,7 @@ package Nuklear is
    function contextual_item_symbol_label
      (arg1 : access nk_context;
       arg2 : nk_symbol_type;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3590
    with Import => True, 
         Convention => C, 
@@ -5454,7 +5488,7 @@ package Nuklear is
    function contextual_item_symbol_text
      (arg1 : access nk_context;
       arg2 : nk_symbol_type;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       arg4 : int;
       alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3591
    with Import => True, 
@@ -5477,7 +5511,7 @@ package Nuklear is
   -- *
   -- * =============================================================================  
 
-   procedure tooltip (arg1 : access nk_context; arg2 : Interfaces.C.Strings.chars_ptr)  -- ./Nuklear/nuklear.h:3599
+   procedure tooltip (arg1 : access nk_context; arg2 : Interfaces.C.char_array)  -- ./Nuklear/nuklear.h:3599
    with Import => True, 
         Convention => C, 
         External_Name => "nk_tooltip";
@@ -5510,7 +5544,7 @@ package Nuklear is
 
    function menu_begin_text
      (arg1 : access nk_context;
-      title : Interfaces.C.Strings.chars_ptr;
+      title : Interfaces.C.char_array;
       title_len : int;
       align : nk_flags;
       size : nk_vec2_t) return nk_bool  -- ./Nuklear/nuklear.h:3613
@@ -5520,7 +5554,7 @@ package Nuklear is
 
    function menu_begin_label
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       align : nk_flags;
       size : nk_vec2_t) return nk_bool  -- ./Nuklear/nuklear.h:3614
    with Import => True, 
@@ -5529,7 +5563,7 @@ package Nuklear is
 
    function menu_begin_image
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : nk_image_t;
       size : nk_vec2_t) return nk_bool  -- ./Nuklear/nuklear.h:3615
    with Import => True, 
@@ -5538,7 +5572,7 @@ package Nuklear is
 
    function menu_begin_image_text
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int;
       align : nk_flags;
       arg5 : nk_image_t;
@@ -5549,7 +5583,7 @@ package Nuklear is
 
    function menu_begin_image_label
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       align : nk_flags;
       arg4 : nk_image_t;
       size : nk_vec2_t) return nk_bool  -- ./Nuklear/nuklear.h:3617
@@ -5559,7 +5593,7 @@ package Nuklear is
 
    function menu_begin_symbol
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : nk_symbol_type;
       size : nk_vec2_t) return nk_bool  -- ./Nuklear/nuklear.h:3618
    with Import => True, 
@@ -5568,7 +5602,7 @@ package Nuklear is
 
    function menu_begin_symbol_text
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int;
       align : nk_flags;
       arg5 : nk_symbol_type;
@@ -5579,7 +5613,7 @@ package Nuklear is
 
    function menu_begin_symbol_label
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       align : nk_flags;
       arg4 : nk_symbol_type;
       size : nk_vec2_t) return nk_bool  -- ./Nuklear/nuklear.h:3620
@@ -5589,7 +5623,7 @@ package Nuklear is
 
    function menu_item_text
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int;
       align : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3621
    with Import => True, 
@@ -5598,7 +5632,7 @@ package Nuklear is
 
    function menu_item_label
      (arg1 : access nk_context;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3622
    with Import => True, 
         Convention => C, 
@@ -5607,7 +5641,7 @@ package Nuklear is
    function menu_item_image_label
      (arg1 : access nk_context;
       arg2 : nk_image_t;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3623
    with Import => True, 
         Convention => C, 
@@ -5616,7 +5650,7 @@ package Nuklear is
    function menu_item_image_text
      (arg1 : access nk_context;
       arg2 : nk_image_t;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       len : int;
       alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3624
    with Import => True, 
@@ -5626,7 +5660,7 @@ package Nuklear is
    function menu_item_symbol_text
      (arg1 : access nk_context;
       arg2 : nk_symbol_type;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       arg4 : int;
       alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3625
    with Import => True, 
@@ -5636,7 +5670,7 @@ package Nuklear is
    function menu_item_symbol_label
      (arg1 : access nk_context;
       arg2 : nk_symbol_type;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       alignment : nk_flags) return nk_bool  -- ./Nuklear/nuklear.h:3626
    with Import => True, 
         Convention => C, 
@@ -5867,7 +5901,7 @@ package Nuklear is
         Convention => C, 
         External_Name => "nk_rgb_cf";
 
-   function rgb_hex (rgb : Interfaces.C.Strings.chars_ptr) return nk_color  -- ./Nuklear/nuklear.h:3712
+   function rgb_hex (rgb : Interfaces.C.char_array) return nk_color  -- ./Nuklear/nuklear.h:3712
    with Import => True, 
         Convention => C, 
         External_Name => "nk_rgb_hex";
@@ -5920,7 +5954,7 @@ package Nuklear is
         Convention => C, 
         External_Name => "nk_rgba_cf";
 
-   function rgba_hex (rgb : Interfaces.C.Strings.chars_ptr) return nk_color  -- ./Nuklear/nuklear.h:3722
+   function rgba_hex (rgb : Interfaces.C.char_array) return nk_color  -- ./Nuklear/nuklear.h:3722
    with Import => True, 
         Convention => C, 
         External_Name => "nk_rgba_hex";
@@ -6059,12 +6093,12 @@ package Nuklear is
         Convention => C, 
         External_Name => "nk_color_u32";
 
-   procedure color_hex_rgba (output : Interfaces.C.Strings.chars_ptr; arg2 : nk_color)  -- ./Nuklear/nuklear.h:3749
+   procedure color_hex_rgba (output : Interfaces.C.char_array; arg2 : nk_color)  -- ./Nuklear/nuklear.h:3749
    with Import => True, 
         Convention => C, 
         External_Name => "nk_color_hex_rgba";
 
-   procedure color_hex_rgb (output : Interfaces.C.Strings.chars_ptr; arg2 : nk_color)  -- ./Nuklear/nuklear.h:3750
+   procedure color_hex_rgb (output : Interfaces.C.char_array; arg2 : nk_color)  -- ./Nuklear/nuklear.h:3750
    with Import => True, 
         Convention => C, 
         External_Name => "nk_color_hex_rgb";
@@ -6397,56 +6431,56 @@ package Nuklear is
   -- *
   -- * =============================================================================  
 
-   function strlen (str : Interfaces.C.Strings.chars_ptr) return int  -- ./Nuklear/nuklear.h:3817
+   function strlen (str : Interfaces.C.char_array) return int  -- ./Nuklear/nuklear.h:3817
    with Import => True, 
         Convention => C, 
         External_Name => "nk_strlen";
 
-   function stricmp (s1 : Interfaces.C.Strings.chars_ptr; s2 : Interfaces.C.Strings.chars_ptr) return int  -- ./Nuklear/nuklear.h:3818
+   function stricmp (s1 : Interfaces.C.char_array; s2 : Interfaces.C.char_array) return int  -- ./Nuklear/nuklear.h:3818
    with Import => True, 
         Convention => C, 
         External_Name => "nk_stricmp";
 
    function stricmpn
-     (s1 : Interfaces.C.Strings.chars_ptr;
-      s2 : Interfaces.C.Strings.chars_ptr;
+     (s1 : Interfaces.C.char_array;
+      s2 : Interfaces.C.char_array;
       n : int) return int  -- ./Nuklear/nuklear.h:3819
    with Import => True, 
         Convention => C, 
         External_Name => "nk_stricmpn";
 
-   function strtoi (str : Interfaces.C.Strings.chars_ptr; endptr : System.Address) return int  -- ./Nuklear/nuklear.h:3820
+   function strtoi (str : Interfaces.C.char_array; endptr : System.Address) return int  -- ./Nuklear/nuklear.h:3820
    with Import => True, 
         Convention => C, 
         External_Name => "nk_strtoi";
 
-   function strtof (str : Interfaces.C.Strings.chars_ptr; endptr : System.Address) return float  -- ./Nuklear/nuklear.h:3821
+   function strtof (str : Interfaces.C.char_array; endptr : System.Address) return float  -- ./Nuklear/nuklear.h:3821
    with Import => True, 
         Convention => C, 
         External_Name => "nk_strtof";
 
-   function strtod (str : Interfaces.C.Strings.chars_ptr; endptr : System.Address) return double  -- ./Nuklear/nuklear.h:3824
+   function strtod (str : Interfaces.C.char_array; endptr : System.Address) return double  -- ./Nuklear/nuklear.h:3824
    with Import => True, 
         Convention => C, 
         External_Name => "nk_strtod";
 
-   function strfilter (text : Interfaces.C.Strings.chars_ptr; regexp : Interfaces.C.Strings.chars_ptr) return int  -- ./Nuklear/nuklear.h:3826
+   function strfilter (text : Interfaces.C.char_array; regexp : Interfaces.C.char_array) return int  -- ./Nuklear/nuklear.h:3826
    with Import => True, 
         Convention => C, 
         External_Name => "nk_strfilter";
 
    function strmatch_fuzzy_string
-     (str : Interfaces.C.Strings.chars_ptr;
-      pattern : Interfaces.C.Strings.chars_ptr;
+     (str : Interfaces.C.char_array;
+      pattern : Interfaces.C.char_array;
       out_score : access int) return int  -- ./Nuklear/nuklear.h:3827
    with Import => True, 
         Convention => C, 
         External_Name => "nk_strmatch_fuzzy_string";
 
    function strmatch_fuzzy_text
-     (txt : Interfaces.C.Strings.chars_ptr;
+     (txt : Interfaces.C.char_array;
       txt_len : int;
-      pattern : Interfaces.C.Strings.chars_ptr;
+      pattern : Interfaces.C.char_array;
       out_score : access int) return int  -- ./Nuklear/nuklear.h:3828
    with Import => True, 
         Convention => C, 
@@ -6459,7 +6493,7 @@ package Nuklear is
   -- * =============================================================================  
 
    function utf_decode
-     (arg1 : Interfaces.C.Strings.chars_ptr;
+     (arg1 : Interfaces.C.char_array;
       arg2 : access nk_rune;
       arg3 : int) return int  -- ./Nuklear/nuklear.h:3834
    with Import => True, 
@@ -6468,19 +6502,19 @@ package Nuklear is
 
    function utf_encode
      (arg1 : nk_rune;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int) return int  -- ./Nuklear/nuklear.h:3835
    with Import => True, 
         Convention => C, 
         External_Name => "nk_utf_encode";
 
-   function utf_len (arg1 : Interfaces.C.Strings.chars_ptr; byte_len : int) return int  -- ./Nuklear/nuklear.h:3836
+   function utf_len (arg1 : Interfaces.C.char_array; byte_len : int) return int  -- ./Nuklear/nuklear.h:3836
    with Import => True, 
         Convention => C, 
         External_Name => "nk_utf_len";
 
    function utf_at
-     (buffer : Interfaces.C.Strings.chars_ptr;
+     (buffer : Interfaces.C.char_array;
       length : int;
       index : int;
       unicode : access nk_rune;
@@ -6646,15 +6680,14 @@ package Nuklear is
   --/// ```
   -- 
 
-   type nk_user_font_glyph is null record;   -- incomplete struct
-
    type nk_text_width_f is access function
         (arg1 : nk_handle;
          arg2 : float;
-         arg3 : Interfaces.C.Strings.chars_ptr;
+         arg3 : Interfaces.C.char_array;
          arg4 : int) return float
    with Convention => C;  -- ./Nuklear/nuklear.h:3994
 
+   type nk_user_font_glyph;
    type nk_query_font_glyph_f is access procedure
         (arg1 : nk_handle;
          arg2 : float;
@@ -6662,6 +6695,16 @@ package Nuklear is
          arg4 : nk_rune;
          arg5 : nk_rune)
    with Convention => C;  -- ./Nuklear/nuklear.h:3995
+
+   type anon_array1652 is array (0 .. 1) of aliased nk_vec2_t;
+   type nk_user_font_glyph is record
+      uv : aliased anon_array1652;  -- ./Nuklear/nuklear.h:4001
+      offset : aliased nk_vec2_t;  -- ./Nuklear/nuklear.h:4003
+      width : aliased float;  -- ./Nuklear/nuklear.h:4005
+      height : aliased float;  -- ./Nuklear/nuklear.h:4005
+      xadvance : aliased float;  -- ./Nuklear/nuklear.h:4007
+   end record
+   with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:4000
 
   -- texture coordinates  
   -- offset between top left and glyph  
@@ -6671,6 +6714,8 @@ package Nuklear is
       userdata : aliased nk_handle;  -- ./Nuklear/nuklear.h:4013
       height : aliased float;  -- ./Nuklear/nuklear.h:4015
       width : nk_text_width_f;  -- ./Nuklear/nuklear.h:4017
+      query : nk_query_font_glyph_f;  -- ./Nuklear/nuklear.h:4020
+      texture : aliased nk_handle;  -- ./Nuklear/nuklear.h:4022
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:4012
 
@@ -6702,7 +6747,7 @@ package Nuklear is
   -- number of glyphs of this font inside the glyph baking array output  
   -- font codepoint ranges as pairs of (from/to) and 0 as last element  
    type nk_font_config;
-   type anon_array1652 is array (0 .. 2) of aliased unsigned_char;
+   type anon_array1663 is array (0 .. 2) of aliased unsigned_char;
    type nk_font_config is record
       next : access nk_font_config;  -- ./Nuklear/nuklear.h:4048
       ttf_blob : System.Address;  -- ./Nuklear/nuklear.h:4050
@@ -6712,7 +6757,7 @@ package Nuklear is
       pixel_snap : aliased unsigned_char;  -- ./Nuklear/nuklear.h:4061
       oversample_v : aliased unsigned_char;  -- ./Nuklear/nuklear.h:4063
       oversample_h : aliased unsigned_char;  -- ./Nuklear/nuklear.h:4063
-      padding : aliased anon_array1652;  -- ./Nuklear/nuklear.h:4065
+      padding : aliased anon_array1663;  -- ./Nuklear/nuklear.h:4065
       size : aliased float;  -- ./Nuklear/nuklear.h:4067
       coord_type : aliased nk_font_coord_type;  -- ./Nuklear/nuklear.h:4069
       spacing : aliased nk_vec2_t;  -- ./Nuklear/nuklear.h:4071
@@ -6776,7 +6821,7 @@ package Nuklear is
       FONT_ATLAS_RGBA32)
    with Convention => C;  -- ./Nuklear/nuklear.h:4102
 
-   type anon_array1662 is array (0 .. 6) of aliased nk_cursor;
+   type anon_array1673 is array (0 .. 6) of aliased nk_cursor;
    type nk_font_atlas is record
       pixel : System.Address;  -- ./Nuklear/nuklear.h:4108
       tex_width : aliased int;  -- ./Nuklear/nuklear.h:4109
@@ -6784,7 +6829,7 @@ package Nuklear is
       permanent : aliased nk_allocator;  -- ./Nuklear/nuklear.h:4112
       temporary : aliased nk_allocator;  -- ./Nuklear/nuklear.h:4113
       custom : aliased nk_recti_t;  -- ./Nuklear/nuklear.h:4115
-      cursors : aliased anon_array1662;  -- ./Nuklear/nuklear.h:4116
+      cursors : aliased anon_array1673;  -- ./Nuklear/nuklear.h:4116
       glyph_count : aliased int;  -- ./Nuklear/nuklear.h:4118
       glyphs : access nk_font_glyph;  -- ./Nuklear/nuklear.h:4119
       default_font : access nk_font;  -- ./Nuklear/nuklear.h:4120
@@ -6816,6 +6861,11 @@ package Nuklear is
    with Import => True, 
         Convention => C, 
         External_Name => "nk_font_korean_glyph_ranges";
+
+   procedure font_atlas_init_default (arg1 : access nk_font_atlas)  -- ./Nuklear/nuklear.h:4133
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_font_atlas_init_default";
 
    procedure font_atlas_init (arg1 : access nk_font_atlas; arg2 : access nk_allocator)  -- ./Nuklear/nuklear.h:4135
    with Import => True, 
@@ -6863,6 +6913,15 @@ package Nuklear is
         Convention => C, 
         External_Name => "nk_font_atlas_add_from_memory";
 
+   function font_atlas_add_from_file
+     (atlas : access nk_font_atlas;
+      file_path : Interfaces.C.char_array;
+      height : float;
+      arg4 : access constant nk_font_config) return access nk_font  -- ./Nuklear/nuklear.h:4145
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_font_atlas_add_from_file";
+
    function font_atlas_add_compressed
      (arg1 : access nk_font_atlas;
       memory : System.Address;
@@ -6875,7 +6934,7 @@ package Nuklear is
 
    function font_atlas_add_compressed_base85
      (arg1 : access nk_font_atlas;
-      data : Interfaces.C.Strings.chars_ptr;
+      data : Interfaces.C.char_array;
       height : float;
       config : access constant nk_font_config) return access nk_font  -- ./Nuklear/nuklear.h:4148
    with Import => True, 
@@ -6983,9 +7042,9 @@ package Nuklear is
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:4216
 
-   type anon_array1688 is array (0 .. 1) of aliased nk_buffer_marker;
+   type anon_array1699 is array (0 .. 1) of aliased nk_buffer_marker;
    type nk_buffer is record
-      marker : aliased anon_array1688;  -- ./Nuklear/nuklear.h:4218
+      marker : aliased anon_array1699;  -- ./Nuklear/nuklear.h:4218
       pool : aliased nk_allocator;  -- ./Nuklear/nuklear.h:4220
       c_type : aliased nk_allocation_type;  -- ./Nuklear/nuklear.h:4222
       memory : aliased nk_memory;  -- ./Nuklear/nuklear.h:4224
@@ -7006,6 +7065,11 @@ package Nuklear is
   -- totally consumed memory given that enough memory is present  
   -- number of allocation calls  
   -- current size of the buffer  
+   procedure buffer_init_default (arg1 : access nk_buffer)  -- ./Nuklear/nuklear.h:4239
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_buffer_init_default";
+
    procedure buffer_init
      (arg1 : access nk_buffer;
       arg2 : access constant nk_allocator;
@@ -7091,6 +7155,11 @@ package Nuklear is
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:4263
 
   -- in codepoints/runes/glyphs  
+   procedure str_init_default (arg1 : access nk_str)  -- ./Nuklear/nuklear.h:4269
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_str_init_default";
+
    procedure str_init
      (arg1 : access nk_str;
       arg2 : access constant nk_allocator;
@@ -7119,26 +7188,26 @@ package Nuklear is
 
    function str_append_text_char
      (arg1 : access nk_str;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int) return int  -- ./Nuklear/nuklear.h:4276
    with Import => True, 
         Convention => C, 
         External_Name => "nk_str_append_text_char";
 
-   function str_append_str_char (arg1 : access nk_str; arg2 : Interfaces.C.Strings.chars_ptr) return int  -- ./Nuklear/nuklear.h:4277
+   function str_append_str_char (arg1 : access nk_str; arg2 : Interfaces.C.char_array) return int  -- ./Nuklear/nuklear.h:4277
    with Import => True, 
         Convention => C, 
         External_Name => "nk_str_append_str_char";
 
    function str_append_text_utf8
      (arg1 : access nk_str;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       arg3 : int) return int  -- ./Nuklear/nuklear.h:4278
    with Import => True, 
         Convention => C, 
         External_Name => "nk_str_append_text_utf8";
 
-   function str_append_str_utf8 (arg1 : access nk_str; arg2 : Interfaces.C.Strings.chars_ptr) return int  -- ./Nuklear/nuklear.h:4279
+   function str_append_str_utf8 (arg1 : access nk_str; arg2 : Interfaces.C.char_array) return int  -- ./Nuklear/nuklear.h:4279
    with Import => True, 
         Convention => C, 
         External_Name => "nk_str_append_str_utf8";
@@ -7159,7 +7228,7 @@ package Nuklear is
    function str_insert_at_char
      (arg1 : access nk_str;
       pos : int;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       arg4 : int) return int  -- ./Nuklear/nuklear.h:4283
    with Import => True, 
         Convention => C, 
@@ -7168,7 +7237,7 @@ package Nuklear is
    function str_insert_at_rune
      (arg1 : access nk_str;
       pos : int;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       arg4 : int) return int  -- ./Nuklear/nuklear.h:4284
    with Import => True, 
         Convention => C, 
@@ -7177,7 +7246,7 @@ package Nuklear is
    function str_insert_text_char
      (arg1 : access nk_str;
       pos : int;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       arg4 : int) return int  -- ./Nuklear/nuklear.h:4286
    with Import => True, 
         Convention => C, 
@@ -7186,7 +7255,7 @@ package Nuklear is
    function str_insert_str_char
      (arg1 : access nk_str;
       pos : int;
-      arg3 : Interfaces.C.Strings.chars_ptr) return int  -- ./Nuklear/nuklear.h:4287
+      arg3 : Interfaces.C.char_array) return int  -- ./Nuklear/nuklear.h:4287
    with Import => True, 
         Convention => C, 
         External_Name => "nk_str_insert_str_char";
@@ -7194,7 +7263,7 @@ package Nuklear is
    function str_insert_text_utf8
      (arg1 : access nk_str;
       pos : int;
-      arg3 : Interfaces.C.Strings.chars_ptr;
+      arg3 : Interfaces.C.char_array;
       arg4 : int) return int  -- ./Nuklear/nuklear.h:4288
    with Import => True, 
         Convention => C, 
@@ -7203,7 +7272,7 @@ package Nuklear is
    function str_insert_str_utf8
      (arg1 : access nk_str;
       pos : int;
-      arg3 : Interfaces.C.Strings.chars_ptr) return int  -- ./Nuklear/nuklear.h:4289
+      arg3 : Interfaces.C.char_array) return int  -- ./Nuklear/nuklear.h:4289
    with Import => True, 
         Convention => C, 
         External_Name => "nk_str_insert_str_utf8";
@@ -7350,11 +7419,11 @@ package Nuklear is
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:4353
 
-   type anon_array1745 is array (0 .. 98) of aliased nk_text_undo_record;
-   type anon_array1747 is array (0 .. 998) of aliased nk_rune;
+   type anon_array1754 is array (0 .. 98) of aliased nk_text_undo_record;
+   type anon_array1756 is array (0 .. 998) of aliased nk_rune;
    type nk_text_undo_state is record
-      undo_rec : aliased anon_array1745;  -- ./Nuklear/nuklear.h:4361
-      undo_char : aliased anon_array1747;  -- ./Nuklear/nuklear.h:4362
+      undo_rec : aliased anon_array1754;  -- ./Nuklear/nuklear.h:4361
+      undo_char : aliased anon_array1756;  -- ./Nuklear/nuklear.h:4362
       undo_point : aliased short;  -- ./Nuklear/nuklear.h:4363
       redo_point : aliased short;  -- ./Nuklear/nuklear.h:4364
       undo_char_point : aliased short;  -- ./Nuklear/nuklear.h:4365
@@ -7430,6 +7499,11 @@ package Nuklear is
         External_Name => "nk_filter_binary";
 
   -- text editor  
+   procedure textedit_init_default (arg1 : access nk_text_edit)  -- ./Nuklear/nuklear.h:4411
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_textedit_init_default";
+
    procedure textedit_init
      (arg1 : access nk_text_edit;
       arg2 : access nk_allocator;
@@ -7453,7 +7527,7 @@ package Nuklear is
 
    procedure textedit_text
      (arg1 : access nk_text_edit;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       total_len : int)  -- ./Nuklear/nuklear.h:4416
    with Import => True, 
         Convention => C, 
@@ -7484,7 +7558,7 @@ package Nuklear is
 
    function textedit_paste
      (arg1 : access nk_text_edit;
-      arg2 : Interfaces.C.Strings.chars_ptr;
+      arg2 : Interfaces.C.char_array;
       len : int) return nk_bool  -- ./Nuklear/nuklear.h:4421
    with Import => True, 
         Convention => C, 
@@ -7601,13 +7675,13 @@ package Nuklear is
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:4514
 
-   type anon_array1766 is array (0 .. 1) of aliased nk_vec2i_t;
+   type anon_array1775 is array (0 .. 1) of aliased nk_vec2i_t;
    type nk_command_curve is record
       header : aliased nk_command;  -- ./Nuklear/nuklear.h:4523
       line_thickness : aliased unsigned_short;  -- ./Nuklear/nuklear.h:4524
       c_begin : aliased nk_vec2i_t;  -- ./Nuklear/nuklear.h:4525
       c_end : aliased nk_vec2i_t;  -- ./Nuklear/nuklear.h:4526
-      ctrl : aliased anon_array1766;  -- ./Nuklear/nuklear.h:4527
+      ctrl : aliased anon_array1775;  -- ./Nuklear/nuklear.h:4527
       color : aliased nk_color;  -- ./Nuklear/nuklear.h:4528
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:4522
@@ -7688,14 +7762,14 @@ package Nuklear is
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:4583
 
-   type anon_array1775 is array (0 .. 1) of aliased float;
+   type anon_array1784 is array (0 .. 1) of aliased float;
    type nk_command_arc is record
       header : aliased nk_command;  -- ./Nuklear/nuklear.h:4591
       cx : aliased short;  -- ./Nuklear/nuklear.h:4592
       cy : aliased short;  -- ./Nuklear/nuklear.h:4592
       r : aliased unsigned_short;  -- ./Nuklear/nuklear.h:4593
       line_thickness : aliased unsigned_short;  -- ./Nuklear/nuklear.h:4594
-      a : aliased anon_array1775;  -- ./Nuklear/nuklear.h:4595
+      a : aliased anon_array1784;  -- ./Nuklear/nuklear.h:4595
       color : aliased nk_color;  -- ./Nuklear/nuklear.h:4596
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:4590
@@ -7705,18 +7779,18 @@ package Nuklear is
       cx : aliased short;  -- ./Nuklear/nuklear.h:4601
       cy : aliased short;  -- ./Nuklear/nuklear.h:4601
       r : aliased unsigned_short;  -- ./Nuklear/nuklear.h:4602
-      a : aliased anon_array1775;  -- ./Nuklear/nuklear.h:4603
+      a : aliased anon_array1784;  -- ./Nuklear/nuklear.h:4603
       color : aliased nk_color;  -- ./Nuklear/nuklear.h:4604
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:4599
 
-   type anon_array1778 is array (0 .. 0) of aliased nk_vec2i_t;
+   type anon_array1787 is array (0 .. 0) of aliased nk_vec2i_t;
    type nk_command_polygon is record
       header : aliased nk_command;  -- ./Nuklear/nuklear.h:4608
       color : aliased nk_color;  -- ./Nuklear/nuklear.h:4609
       line_thickness : aliased unsigned_short;  -- ./Nuklear/nuklear.h:4610
       point_count : aliased unsigned_short;  -- ./Nuklear/nuklear.h:4611
-      points : aliased anon_array1778;  -- ./Nuklear/nuklear.h:4612
+      points : aliased anon_array1787;  -- ./Nuklear/nuklear.h:4612
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:4607
 
@@ -7724,7 +7798,7 @@ package Nuklear is
       header : aliased nk_command;  -- ./Nuklear/nuklear.h:4616
       color : aliased nk_color;  -- ./Nuklear/nuklear.h:4617
       point_count : aliased unsigned_short;  -- ./Nuklear/nuklear.h:4618
-      points : aliased anon_array1778;  -- ./Nuklear/nuklear.h:4619
+      points : aliased anon_array1787;  -- ./Nuklear/nuklear.h:4619
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:4615
 
@@ -7733,7 +7807,7 @@ package Nuklear is
       color : aliased nk_color;  -- ./Nuklear/nuklear.h:4624
       line_thickness : aliased unsigned_short;  -- ./Nuklear/nuklear.h:4625
       point_count : aliased unsigned_short;  -- ./Nuklear/nuklear.h:4626
-      points : aliased anon_array1778;  -- ./Nuklear/nuklear.h:4627
+      points : aliased anon_array1787;  -- ./Nuklear/nuklear.h:4627
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:4622
 
@@ -7980,7 +8054,7 @@ package Nuklear is
    procedure draw_text
      (arg1 : access nk_command_buffer;
       arg2 : nk_rect_t;
-      text : Interfaces.C.Strings.chars_ptr;
+      text : Interfaces.C.char_array;
       len : int;
       arg5 : access constant nk_user_font;
       arg6 : nk_color;
@@ -8016,9 +8090,9 @@ package Nuklear is
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:4703
 
-   type anon_array1808 is array (0 .. 3) of aliased nk_mouse_button;
+   type anon_array1817 is array (0 .. 3) of aliased nk_mouse_button;
    type nk_mouse is record
-      buttons : aliased anon_array1808;  -- ./Nuklear/nuklear.h:4709
+      buttons : aliased anon_array1817;  -- ./Nuklear/nuklear.h:4709
       pos : aliased nk_vec2_t;  -- ./Nuklear/nuklear.h:4710
       prev : aliased nk_vec2_t;  -- ./Nuklear/nuklear.h:4714
       c_delta : aliased nk_vec2_t;  -- ./Nuklear/nuklear.h:4715
@@ -8035,11 +8109,11 @@ package Nuklear is
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:4722
 
-   type anon_array1812 is array (0 .. 29) of aliased nk_key;
-   subtype anon_array1814 is Interfaces.C.char_array (0 .. 15);
+   type anon_array1821 is array (0 .. 29) of aliased nk_key;
+   subtype anon_array1823 is Interfaces.C.char_array (0 .. 15);
    type nk_keyboard is record
-      keys : aliased anon_array1812;  -- ./Nuklear/nuklear.h:4727
-      text : aliased anon_array1814;  -- ./Nuklear/nuklear.h:4728
+      keys : aliased anon_array1821;  -- ./Nuklear/nuklear.h:4727
+      text : aliased anon_array1823;  -- ./Nuklear/nuklear.h:4728
       text_len : aliased int;  -- ./Nuklear/nuklear.h:4729
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:4726
@@ -8171,17 +8245,325 @@ package Nuklear is
   --/// things than this library provides by default.
   -- 
 
+   subtype nk_draw_index is nk_uint;  -- ./Nuklear/nuklear.h:4775
+
+   type nk_draw_list_stroke is 
+     (STROKE_OPEN,
+      STROKE_CLOSED)
+   with Convention => C;  -- ./Nuklear/nuklear.h:4779
+
   -- build up path has no connection back to the beginning  
   -- build up path has a connection back to the beginning  
+   type nk_draw_vertex_layout_attribute is 
+     (VERTEX_POSITION,
+      VERTEX_COLOR,
+      VERTEX_TEXCOORD,
+      VERTEX_ATTRIBUTE_COUNT)
+   with Convention => C;  -- ./Nuklear/nuklear.h:4786
+
+   subtype nk_draw_vertex_layout_format is unsigned;
+   nk_draw_vertex_layout_format_FORMAT_SCHAR : constant nk_draw_vertex_layout_format := 0;
+   nk_draw_vertex_layout_format_FORMAT_SSHORT : constant nk_draw_vertex_layout_format := 1;
+   nk_draw_vertex_layout_format_FORMAT_SINT : constant nk_draw_vertex_layout_format := 2;
+   nk_draw_vertex_layout_format_FORMAT_UCHAR : constant nk_draw_vertex_layout_format := 3;
+   nk_draw_vertex_layout_format_FORMAT_USHORT : constant nk_draw_vertex_layout_format := 4;
+   nk_draw_vertex_layout_format_FORMAT_UINT : constant nk_draw_vertex_layout_format := 5;
+   nk_draw_vertex_layout_format_FORMAT_FLOAT : constant nk_draw_vertex_layout_format := 6;
+   nk_draw_vertex_layout_format_FORMAT_DOUBLE : constant nk_draw_vertex_layout_format := 7;
+   nk_draw_vertex_layout_format_FORMAT_COLOR_BEGIN : constant nk_draw_vertex_layout_format := 8;
+   nk_draw_vertex_layout_format_FORMAT_R8G8B8 : constant nk_draw_vertex_layout_format := 8;
+   nk_draw_vertex_layout_format_FORMAT_R16G15B16 : constant nk_draw_vertex_layout_format := 9;
+   nk_draw_vertex_layout_format_FORMAT_R32G32B32 : constant nk_draw_vertex_layout_format := 10;
+   nk_draw_vertex_layout_format_FORMAT_R8G8B8A8 : constant nk_draw_vertex_layout_format := 11;
+   nk_draw_vertex_layout_format_FORMAT_B8G8R8A8 : constant nk_draw_vertex_layout_format := 12;
+   nk_draw_vertex_layout_format_FORMAT_R16G15B16A16 : constant nk_draw_vertex_layout_format := 13;
+   nk_draw_vertex_layout_format_FORMAT_R32G32B32A32 : constant nk_draw_vertex_layout_format := 14;
+   nk_draw_vertex_layout_format_FORMAT_R32G32B32A32_FLOAT : constant nk_draw_vertex_layout_format := 15;
+   nk_draw_vertex_layout_format_FORMAT_R32G32B32A32_DOUBLE : constant nk_draw_vertex_layout_format := 16;
+   nk_draw_vertex_layout_format_FORMAT_RGB32 : constant nk_draw_vertex_layout_format := 17;
+   nk_draw_vertex_layout_format_FORMAT_RGBA32 : constant nk_draw_vertex_layout_format := 18;
+   nk_draw_vertex_layout_format_FORMAT_COLOR_END : constant nk_draw_vertex_layout_format := 18;
+   nk_draw_vertex_layout_format_FORMAT_COUNT : constant nk_draw_vertex_layout_format := 19;  -- ./Nuklear/nuklear.h:4793
+
+   type nk_draw_vertex_layout_element is record
+      attribute : aliased nk_draw_vertex_layout_attribute;  -- ./Nuklear/nuklear.h:4823
+      format : aliased nk_draw_vertex_layout_format;  -- ./Nuklear/nuklear.h:4824
+      offset : aliased nk_size;  -- ./Nuklear/nuklear.h:4825
+   end record
+   with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:4822
+
+   type nk_draw_command is record
+      elem_count : aliased unsigned;  -- ./Nuklear/nuklear.h:4829
+      clip_rect : aliased nk_rect_t;  -- ./Nuklear/nuklear.h:4831
+      texture : aliased nk_handle;  -- ./Nuklear/nuklear.h:4833
+   end record
+   with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:4828
+
   -- number of elements in the current draw batch  
   -- current screen clipping rectangle  
   -- current texture to set  
+   type anon_array1842 is array (0 .. 11) of aliased nk_vec2_t;
+   type nk_draw_list is record
+      clip_rect : aliased nk_rect_t;  -- ./Nuklear/nuklear.h:4841
+      circle_vtx : aliased anon_array1842;  -- ./Nuklear/nuklear.h:4842
+      config : aliased nk_convert_config;  -- ./Nuklear/nuklear.h:4843
+      buffer : access nk_buffer;  -- ./Nuklear/nuklear.h:4845
+      vertices : access nk_buffer;  -- ./Nuklear/nuklear.h:4846
+      elements : access nk_buffer;  -- ./Nuklear/nuklear.h:4847
+      element_count : aliased unsigned;  -- ./Nuklear/nuklear.h:4849
+      vertex_count : aliased unsigned;  -- ./Nuklear/nuklear.h:4850
+      cmd_count : aliased unsigned;  -- ./Nuklear/nuklear.h:4851
+      cmd_offset : aliased nk_size;  -- ./Nuklear/nuklear.h:4852
+      path_count : aliased unsigned;  -- ./Nuklear/nuklear.h:4854
+      path_offset : aliased unsigned;  -- ./Nuklear/nuklear.h:4855
+      line_AA : aliased nk_anti_aliasing;  -- ./Nuklear/nuklear.h:4857
+      shape_AA : aliased nk_anti_aliasing;  -- ./Nuklear/nuklear.h:4858
+   end record
+   with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:4840
+
   -- draw list  
+   procedure draw_list_init (arg1 : access nk_draw_list)  -- ./Nuklear/nuklear.h:4866
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_init";
+
+   procedure draw_list_setup
+     (arg1 : access nk_draw_list;
+      arg2 : access constant nk_convert_config;
+      cmds : access nk_buffer;
+      vertices : access nk_buffer;
+      elements : access nk_buffer;
+      line_aa : nk_anti_aliasing;
+      shape_aa : nk_anti_aliasing)  -- ./Nuklear/nuklear.h:4867
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_setup";
+
   -- drawing  
+   function u_draw_list_begin (arg1 : access constant nk_draw_list; arg2 : access constant nk_buffer) return access constant nk_draw_command  -- ./Nuklear/nuklear.h:4871
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk__draw_list_begin";
+
+   function u_draw_list_next
+     (arg1 : access constant nk_draw_command;
+      arg2 : access constant nk_buffer;
+      arg3 : access constant nk_draw_list) return access constant nk_draw_command  -- ./Nuklear/nuklear.h:4872
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk__draw_list_next";
+
+   function u_draw_list_end (arg1 : access constant nk_draw_list; arg2 : access constant nk_buffer) return access constant nk_draw_command  -- ./Nuklear/nuklear.h:4873
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk__draw_list_end";
+
   -- path  
+   procedure draw_list_path_clear (arg1 : access nk_draw_list)  -- ./Nuklear/nuklear.h:4876
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_path_clear";
+
+   procedure draw_list_path_line_to (arg1 : access nk_draw_list; pos : nk_vec2_t)  -- ./Nuklear/nuklear.h:4877
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_path_line_to";
+
+   procedure draw_list_path_arc_to_fast
+     (arg1 : access nk_draw_list;
+      center : nk_vec2_t;
+      radius : float;
+      a_min : int;
+      a_max : int)  -- ./Nuklear/nuklear.h:4878
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_path_arc_to_fast";
+
+   procedure draw_list_path_arc_to
+     (arg1 : access nk_draw_list;
+      center : nk_vec2_t;
+      radius : float;
+      a_min : float;
+      a_max : float;
+      segments : unsigned)  -- ./Nuklear/nuklear.h:4879
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_path_arc_to";
+
+   procedure draw_list_path_rect_to
+     (arg1 : access nk_draw_list;
+      a : nk_vec2_t;
+      b : nk_vec2_t;
+      rounding : float)  -- ./Nuklear/nuklear.h:4880
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_path_rect_to";
+
+   procedure draw_list_path_curve_to
+     (arg1 : access nk_draw_list;
+      p2 : nk_vec2_t;
+      p3 : nk_vec2_t;
+      p4 : nk_vec2_t;
+      num_segments : unsigned)  -- ./Nuklear/nuklear.h:4881
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_path_curve_to";
+
+   procedure draw_list_path_fill (arg1 : access nk_draw_list; arg2 : nk_color)  -- ./Nuklear/nuklear.h:4882
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_path_fill";
+
+   procedure draw_list_path_stroke
+     (arg1 : access nk_draw_list;
+      arg2 : nk_color;
+      closed : nk_draw_list_stroke;
+      thickness : float)  -- ./Nuklear/nuklear.h:4883
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_path_stroke";
+
   -- stroke  
+   procedure draw_list_stroke_line
+     (arg1 : access nk_draw_list;
+      a : nk_vec2_t;
+      b : nk_vec2_t;
+      arg4 : nk_color;
+      thickness : float)  -- ./Nuklear/nuklear.h:4886
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_stroke_line";
+
+   procedure draw_list_stroke_rect
+     (arg1 : access nk_draw_list;
+      rect : nk_rect_t;
+      arg3 : nk_color;
+      rounding : float;
+      thickness : float)  -- ./Nuklear/nuklear.h:4887
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_stroke_rect";
+
+   procedure draw_list_stroke_triangle
+     (arg1 : access nk_draw_list;
+      a : nk_vec2_t;
+      b : nk_vec2_t;
+      c : nk_vec2_t;
+      arg5 : nk_color;
+      thickness : float)  -- ./Nuklear/nuklear.h:4888
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_stroke_triangle";
+
+   procedure draw_list_stroke_circle
+     (arg1 : access nk_draw_list;
+      center : nk_vec2_t;
+      radius : float;
+      arg4 : nk_color;
+      segs : unsigned;
+      thickness : float)  -- ./Nuklear/nuklear.h:4889
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_stroke_circle";
+
+   procedure draw_list_stroke_curve
+     (arg1 : access nk_draw_list;
+      p0 : nk_vec2_t;
+      cp0 : nk_vec2_t;
+      cp1 : nk_vec2_t;
+      p1 : nk_vec2_t;
+      arg6 : nk_color;
+      segments : unsigned;
+      thickness : float)  -- ./Nuklear/nuklear.h:4890
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_stroke_curve";
+
+   procedure draw_list_stroke_poly_line
+     (arg1 : access nk_draw_list;
+      pnts : access constant nk_vec2_t;
+      cnt : unsigned;
+      arg4 : nk_color;
+      arg5 : nk_draw_list_stroke;
+      thickness : float;
+      arg7 : nk_anti_aliasing)  -- ./Nuklear/nuklear.h:4891
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_stroke_poly_line";
+
   -- fill  
+   procedure draw_list_fill_rect
+     (arg1 : access nk_draw_list;
+      rect : nk_rect_t;
+      arg3 : nk_color;
+      rounding : float)  -- ./Nuklear/nuklear.h:4894
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_fill_rect";
+
+   procedure draw_list_fill_rect_multi_color
+     (arg1 : access nk_draw_list;
+      rect : nk_rect_t;
+      left : nk_color;
+      top : nk_color;
+      right : nk_color;
+      bottom : nk_color)  -- ./Nuklear/nuklear.h:4895
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_fill_rect_multi_color";
+
+   procedure draw_list_fill_triangle
+     (arg1 : access nk_draw_list;
+      a : nk_vec2_t;
+      b : nk_vec2_t;
+      c : nk_vec2_t;
+      arg5 : nk_color)  -- ./Nuklear/nuklear.h:4896
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_fill_triangle";
+
+   procedure draw_list_fill_circle
+     (arg1 : access nk_draw_list;
+      center : nk_vec2_t;
+      radius : float;
+      col : nk_color;
+      segs : unsigned)  -- ./Nuklear/nuklear.h:4897
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_fill_circle";
+
+   procedure draw_list_fill_poly_convex
+     (arg1 : access nk_draw_list;
+      points : access constant nk_vec2_t;
+      count : unsigned;
+      arg4 : nk_color;
+      arg5 : nk_anti_aliasing)  -- ./Nuklear/nuklear.h:4898
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_fill_poly_convex";
+
   -- misc  
+   procedure draw_list_add_image
+     (arg1 : access nk_draw_list;
+      texture : nk_image_t;
+      rect : nk_rect_t;
+      arg4 : nk_color)  -- ./Nuklear/nuklear.h:4901
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_add_image";
+
+   procedure draw_list_add_text
+     (arg1 : access nk_draw_list;
+      arg2 : access constant nk_user_font;
+      arg3 : nk_rect_t;
+      text : Interfaces.C.char_array;
+      len : int;
+      font_height : float;
+      arg7 : nk_color)  -- ./Nuklear/nuklear.h:4902
+   with Import => True, 
+        Convention => C, 
+        External_Name => "nk_draw_list_add_text";
+
   -- ===============================================================
   -- *
   -- *                          GUI
@@ -8598,10 +8980,10 @@ package Nuklear is
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:5311
 
-   type anon_array1838 is array (0 .. 6) of access constant nk_cursor;
+   type anon_array1882 is array (0 .. 6) of access constant nk_cursor;
    type nk_style is record
       font : access constant nk_user_font;  -- ./Nuklear/nuklear.h:5349
-      cursors : anon_array1838;  -- ./Nuklear/nuklear.h:5350
+      cursors : anon_array1882;  -- ./Nuklear/nuklear.h:5350
       cursor_active : access constant nk_cursor;  -- ./Nuklear/nuklear.h:5351
       cursor_last : access nk_cursor;  -- ./Nuklear/nuklear.h:5352
       cursor_visible : aliased int;  -- ./Nuklear/nuklear.h:5353
@@ -8677,14 +9059,14 @@ package Nuklear is
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:5405
 
-   type anon_array1847 is array (0 .. 3) of aliased nk_chart_slot;
+   type anon_array1891 is array (0 .. 3) of aliased nk_chart_slot;
    type nk_chart is record
       slot : aliased int;  -- ./Nuklear/nuklear.h:5416
       x : aliased float;  -- ./Nuklear/nuklear.h:5417
       y : aliased float;  -- ./Nuklear/nuklear.h:5417
       w : aliased float;  -- ./Nuklear/nuklear.h:5417
       h : aliased float;  -- ./Nuklear/nuklear.h:5417
-      slots : aliased anon_array1847;  -- ./Nuklear/nuklear.h:5418
+      slots : aliased anon_array1891;  -- ./Nuklear/nuklear.h:5418
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:5415
 
@@ -8701,7 +9083,7 @@ package Nuklear is
       LAYOUT_COUNT)
    with Convention => C;  -- ./Nuklear/nuklear.h:5421
 
-   type anon_array1850 is array (0 .. 15) of aliased float;
+   type anon_array1894 is array (0 .. 15) of aliased float;
    type nk_row_layout is record
       c_type : aliased nk_panel_row_layout_type;  -- ./Nuklear/nuklear.h:5434
       index : aliased int;  -- ./Nuklear/nuklear.h:5435
@@ -8715,7 +9097,7 @@ package Nuklear is
       filled : aliased float;  -- ./Nuklear/nuklear.h:5443
       item : aliased nk_rect_t;  -- ./Nuklear/nuklear.h:5444
       tree_depth : aliased int;  -- ./Nuklear/nuklear.h:5445
-      templates : aliased anon_array1850;  -- ./Nuklear/nuklear.h:5446
+      templates : aliased anon_array1894;  -- ./Nuklear/nuklear.h:5446
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:5433
 
@@ -8809,11 +9191,11 @@ package Nuklear is
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:5519
 
-   subtype anon_array1859 is Interfaces.C.char_array (0 .. 63);
+   subtype anon_array1903 is Interfaces.C.char_array (0 .. 63);
    type nk_property_state is record
       active : aliased int;  -- ./Nuklear/nuklear.h:5533
       prev : aliased int;  -- ./Nuklear/nuklear.h:5533
-      buffer : aliased anon_array1859;  -- ./Nuklear/nuklear.h:5534
+      buffer : aliased anon_array1903;  -- ./Nuklear/nuklear.h:5534
       length : aliased int;  -- ./Nuklear/nuklear.h:5535
       cursor : aliased int;  -- ./Nuklear/nuklear.h:5536
       select_start : aliased int;  -- ./Nuklear/nuklear.h:5537
@@ -8829,7 +9211,7 @@ package Nuklear is
    type nk_window is record
       seq : aliased unsigned;  -- ./Nuklear/nuklear.h:5546
       name : aliased nk_hash;  -- ./Nuklear/nuklear.h:5547
-      name_string : aliased anon_array1859;  -- ./Nuklear/nuklear.h:5548
+      name_string : aliased anon_array1903;  -- ./Nuklear/nuklear.h:5548
       flags : aliased nk_flags;  -- ./Nuklear/nuklear.h:5549
       bounds : aliased nk_rect_t;  -- ./Nuklear/nuklear.h:5551
       scrollbar : aliased nk_scroll;  -- ./Nuklear/nuklear.h:5552
@@ -8921,52 +9303,52 @@ package Nuklear is
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:5645
 
-   type anon_array1871 is array (0 .. 15) of aliased nk_config_stack_style_item_element;
+   type anon_array1915 is array (0 .. 15) of aliased nk_config_stack_style_item_element;
    type nk_config_stack_style_item is record
       head : aliased int;  -- ./Nuklear/nuklear.h:5647
-      elements : aliased anon_array1871;  -- ./Nuklear/nuklear.h:5647
+      elements : aliased anon_array1915;  -- ./Nuklear/nuklear.h:5647
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:5647
 
-   type anon_array1874 is array (0 .. 31) of aliased nk_config_stack_float_element;
+   type anon_array1918 is array (0 .. 31) of aliased nk_config_stack_float_element;
    type nk_config_stack_float is record
       head : aliased int;  -- ./Nuklear/nuklear.h:5648
-      elements : aliased anon_array1874;  -- ./Nuklear/nuklear.h:5648
+      elements : aliased anon_array1918;  -- ./Nuklear/nuklear.h:5648
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:5648
 
-   type anon_array1876 is array (0 .. 15) of aliased nk_config_stack_vec2_element;
+   type anon_array1920 is array (0 .. 15) of aliased nk_config_stack_vec2_element;
    type nk_config_stack_vec2 is record
       head : aliased int;  -- ./Nuklear/nuklear.h:5649
-      elements : aliased anon_array1876;  -- ./Nuklear/nuklear.h:5649
+      elements : aliased anon_array1920;  -- ./Nuklear/nuklear.h:5649
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:5649
 
-   type anon_array1878 is array (0 .. 31) of aliased nk_config_stack_flags_element;
+   type anon_array1922 is array (0 .. 31) of aliased nk_config_stack_flags_element;
    type nk_config_stack_flags is record
       head : aliased int;  -- ./Nuklear/nuklear.h:5650
-      elements : aliased anon_array1878;  -- ./Nuklear/nuklear.h:5650
+      elements : aliased anon_array1922;  -- ./Nuklear/nuklear.h:5650
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:5650
 
-   type anon_array1880 is array (0 .. 31) of aliased nk_config_stack_color_element;
+   type anon_array1924 is array (0 .. 31) of aliased nk_config_stack_color_element;
    type nk_config_stack_color is record
       head : aliased int;  -- ./Nuklear/nuklear.h:5651
-      elements : aliased anon_array1880;  -- ./Nuklear/nuklear.h:5651
+      elements : aliased anon_array1924;  -- ./Nuklear/nuklear.h:5651
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:5651
 
-   type anon_array1883 is array (0 .. 7) of aliased nk_config_stack_user_font_element;
+   type anon_array1927 is array (0 .. 7) of aliased nk_config_stack_user_font_element;
    type nk_config_stack_user_font is record
       head : aliased int;  -- ./Nuklear/nuklear.h:5652
-      elements : aliased anon_array1883;  -- ./Nuklear/nuklear.h:5652
+      elements : aliased anon_array1927;  -- ./Nuklear/nuklear.h:5652
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:5652
 
-   type anon_array1885 is array (0 .. 7) of aliased nk_config_stack_button_behavior_element;
+   type anon_array1929 is array (0 .. 7) of aliased nk_config_stack_button_behavior_element;
    type nk_config_stack_button_behavior is record
       head : aliased int;  -- ./Nuklear/nuklear.h:5653
-      elements : aliased anon_array1885;  -- ./Nuklear/nuklear.h:5653
+      elements : aliased anon_array1929;  -- ./Nuklear/nuklear.h:5653
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:5653
 
@@ -8985,13 +9367,13 @@ package Nuklear is
   -- *                          CONTEXT
   -- * ============================================================= 
 
-   type anon_array1888 is array (0 .. 59) of aliased nk_hash;
-   type anon_array1890 is array (0 .. 59) of aliased nk_uint;
+   type anon_array1932 is array (0 .. 59) of aliased nk_hash;
+   type anon_array1934 is array (0 .. 59) of aliased nk_uint;
    type nk_table is record
       seq : aliased unsigned;  -- ./Nuklear/nuklear.h:5672
       size : aliased unsigned;  -- ./Nuklear/nuklear.h:5673
-      keys : aliased anon_array1888;  -- ./Nuklear/nuklear.h:5674
-      values : aliased anon_array1890;  -- ./Nuklear/nuklear.h:5675
+      keys : aliased anon_array1932;  -- ./Nuklear/nuklear.h:5674
+      values : aliased anon_array1934;  -- ./Nuklear/nuklear.h:5675
       next : access nk_table;  -- ./Nuklear/nuklear.h:5676
       prev : access nk_table;  -- ./Nuklear/nuklear.h:5676
    end record
@@ -9019,11 +9401,11 @@ package Nuklear is
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:5685
 
    type nk_page;
-   type anon_array1896 is array (0 .. 0) of aliased nk_page_element;
+   type anon_array1940 is array (0 .. 0) of aliased nk_page_element;
    type nk_page is record
       size : aliased unsigned;  -- ./Nuklear/nuklear.h:5692
       next : access nk_page;  -- ./Nuklear/nuklear.h:5693
-      win : aliased anon_array1896;  -- ./Nuklear/nuklear.h:5694
+      win : aliased anon_array1940;  -- ./Nuklear/nuklear.h:5694
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:5691
 
@@ -9049,6 +9431,7 @@ package Nuklear is
       button_behavior : aliased nk_button_behavior;  -- ./Nuklear/nuklear.h:5715
       stacks : aliased nk_configuration_stacks;  -- ./Nuklear/nuklear.h:5716
       delta_time_seconds : aliased float;  -- ./Nuklear/nuklear.h:5717
+      draw_list : aliased nk_draw_list;  -- ./Nuklear/nuklear.h:5723
       text_edit : aliased nk_text_edit;  -- ./Nuklear/nuklear.h:5732
       overlay : aliased nk_command_buffer;  -- ./Nuklear/nuklear.h:5734
       build : aliased int;  -- ./Nuklear/nuklear.h:5737
