@@ -2,7 +2,7 @@
 
  Ada 2022 language bindings to the Nuklear UI library.
 
- ## Copyright notice
+## Copyright notice
 
 See [LICENCE](./LICENCE) file.
 
