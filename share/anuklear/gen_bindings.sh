@@ -1,8 +1,10 @@
 #!/bin/bash
 
 DEFINES="-DNK_INCLUDE_FIXED_TYPES=1 -DNK_INCLUDE_STANDARD_BOOL=1 \
-    -DNK_INCLUDE_FONT_BAKING=1 -DNK_INCLUDE_DEFAULT_FONT=1 \
-    -DNK_UINT_DRAW_INDEX=1"
+     -DNK_INCLUDE_STANDARD_IO=1 -DNK_INCLUDE_DEFAULT_ALLOCATOR=1 \
+     -DNK_INCLUDE_VERTEX_BUFFER_OUTPUT=1 -DNK_INCLUDE_FONT_BAKING=1 \
+     -DNK_INCLUDE_DEFAULT_FONT=1 -DNK_UINT_DRAW_INDEX=1 \
+     -DNK_ZERO_COMMAND_MEMORY=1"
 # TODO:
 # #define NK_INCLUDE_COMMAND_USERDATA 1
 
@@ -39,7 +41,9 @@ sed -i 's/type nk_vec2 is record/type nk_vec2_t is record/' nuklear_h.ads
 sed -i 's/: nk_vec2;/: nk_vec2_t;/' nuklear_h.ads
 sed -i 's/: nk_vec2)/: nk_vec2_t)/' nuklear_h.ads
 sed -i 's/: access nk_vec2;/: access nk_vec2_t;/' nuklear_h.ads
+sed -i 's/: access constant nk_vec2;/: access constant nk_vec2_t;/' nuklear_h.ads
 sed -i 's/: aliased nk_vec2;/: aliased nk_vec2_t;/' nuklear_h.ads
+sed -i 's/of aliased nk_vec2;/of aliased nk_vec2_t;/' nuklear_h.ads
 sed -i 's/return nk_vec2 /return nk_vec2_t /' nuklear_h.ads
 
 sed -i 's/type nk_vec2i is record/type nk_vec2i_t is record/' nuklear_h.ads
@@ -67,6 +71,9 @@ sed -i 's/nk_panel_flags_//g' nuklear_h.ads
 
 sed -i 's/function nk_/function /' nuklear_h.ads
 sed -i 's/procedure nk_/procedure /' nuklear_h.ads
+
+sed -i 's/: Interfaces.C.Strings.chars_ptr;/: Interfaces.C.char_array;/' nuklear_h.ads
+sed -i 's/: Interfaces.C.Strings.chars_ptr)/: Interfaces.C.char_array)/' nuklear_h.ads
 
 sed -i '/-- some language glyph codepoint ranges/i \
     type font_atlas_access is access all nk_font_atlas; \
