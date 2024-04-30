@@ -8,3 +8,9 @@ maintainers-logins = ["Lucretia"]
 licenses = "MIT OR Apache-2.0 WITH LLVM-exception"
 website = ""
 tags = ["ui", "gui", "nuklear"]
+
+[[depends-on]]
+  sdlada = "^2.5.20"
+
+[[pins]]
+  sdlada = { path = "../../sdl/sdlada" }
