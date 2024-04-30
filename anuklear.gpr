@@ -1,21 +1,43 @@
 with "config/anuklear_config.gpr";
-project Anuklear is
 
-   for Library_Name use "Anuklear";
-   for Library_Version use Project'Library_Name & ".so." & Anuklear_Config.Crate_Version;
+project ANuklear is
+   for Languages use ("C", "Ada");
+   for Library_Name use "anuklear";
+   for Library_Version use Project'Library_Name & ".so." & ANuklear_Config.Crate_Version;
 
-   for Source_Dirs use ("src/", "config/");
-   for Object_Dir use "obj/" & Anuklear_Config.Build_Profile;
+   type Renderer_Type is ("sdl2");
+   Renderer : Renderer_Type := external ("RENDERER", "sdl2");
+
+   Renderer_Source := "";
+
+   case Renderer is
+      when "sdl2" =>
+         Renderer_Source := "sdl2";
+   end case;
+
+   for Source_Dirs use ("src/", "src/c/", "src/renderer/" & Renderer_Source, "config/");
+   for Object_Dir use "obj/" & ANuklear_Config.Build_Profile;
    for Create_Missing_Dirs use "True";
    for Library_Dir use "lib";
 
    type Library_Type_Type is ("relocatable", "static", "static-pic");
-   Library_Type : Library_Type_Type :=
-     external ("ANUKLEAR_LIBRARY_TYPE", external ("LIBRARY_TYPE", "static"));
+   Library_Type : Library_Type_Type := external ("ANUKLEAR_LIBRARY_TYPE", external ("LIBRARY_TYPE", "static"));
    for Library_Kind use Library_Type;
 
    package Compiler is
-      for Default_Switches ("Ada") use Anuklear_Config.Ada_Compiler_Switches;
+      C_Switches := ("-I../../Nuklear");
+
+      case Renderer is
+         when "sdl2" =>
+            for Switches ("libnuklear.c") use ("-DRENDER_SDL");
+            -- for Switches ("renderer.c") use C_Switches & ("-DRENDER_SDL", "-I../../Nuklear/demo/sdl_renderer");
+      end case;
+
+      -- for Switches ("libnuklear.c") use C_Switches;
+      -- for Default_Switches ("C")   use C_Switches;
+      for Default_Switches ("Ada") use ANuklear_Config.Ada_Compiler_Switches &
+        ("-gnat2022", "-gnata", "-gnato", "-gnatwa", "-gnatwaJ", "-gnaty", "-gnaty-s", "-gnatyO",
+         "-gnatyM120", "-gnatyx");
    end Compiler;
 
    package Binder is
@@ -25,5 +47,4 @@ project Anuklear is
    package Install is
       for Artifacts (".") use ("share");
    end Install;
-
-end Anuklear;
+end ANuklear;
