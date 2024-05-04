@@ -116,7 +116,7 @@ sed -i 's/procedure nk_/procedure /' nuklear_sdl_renderer_h.ads
 sed -i 's/nuklear_sdl_renderer_h/SDL.Nuklear.Renderer/' nuklear_sdl_renderer_h.ads
 sed -i 's/return int/return Interfaces.C.int/' nuklear_sdl_renderer_h.ads
 
-sed -i 's/sdl_font_stash_begin (atlas : access nk_font_atlas)/sdl_font_stash_begin (atlas : access font_atlas_access)/' nuklear_sdl_renderer_h.ads
+sed -i 's/sdl_font_stash_begin (atlas : access nk_font_atlas)/sdl_font_stash_begin (atlas : in out font_atlas_access)/' nuklear_sdl_renderer_h.ads
 
 sed -i '/function sdl_init (/i \
    \
