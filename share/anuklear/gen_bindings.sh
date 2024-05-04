@@ -76,7 +76,8 @@ sed -i 's/: Interfaces.C.Strings.chars_ptr;/: Interfaces.C.char_array;/' nuklear
 sed -i 's/: Interfaces.C.Strings.chars_ptr)/: Interfaces.C.char_array)/' nuklear_h.ads
 
 sed -i '/-- some language glyph codepoint ranges/i \
-    type font_atlas_access is access all nk_font_atlas; \
+    type font_atlas_access is access all nk_font_atlas with \
+      Convention => C; \
     ' nuklear_h.ads
 
 sed -i 's/nuklear_h/Nuklear/' nuklear_h.ads

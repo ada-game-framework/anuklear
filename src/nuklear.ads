@@ -6839,7 +6839,8 @@ package Nuklear is
    end record
    with Convention => C_Pass_By_Copy;  -- ./Nuklear/nuklear.h:4107
 
-    type font_atlas_access is access all nk_font_atlas;
+    type font_atlas_access is access all nk_font_atlas with
+      Convention => C;
 
   -- some language glyph codepoint ranges
    function font_default_glyph_ranges return access nk_rune  -- ./Nuklear/nuklear.h:4127
