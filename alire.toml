@@ -13,5 +13,5 @@ tags = ["ui", "gui", "nuklear"]
   sdlada = "^2.5.20"
 
 [[pins]]
-  sdlada = { url = "https://github.com/ada-game-framework/sdlada" }
-  # sdlada = { path = "../../sdl/sdlada" }
+  # sdlada = { url = "https://github.com/ada-game-framework/sdlada" }
+  sdlada = { path = "../../sdl/sdlada" }
