@@ -29,7 +29,7 @@ project ANuklear is
 
       case Renderer is
          when "sdl2" =>
-            for Switches ("libnuklear.c") use ("-DRENDER_SDL");
+            for Switches ("libnuklear.c") use ("-DRENDER_SDL=1");
             -- for Switches ("renderer.c") use C_Switches & ("-DRENDER_SDL", "-I../../Nuklear/demo/sdl_renderer");
       end case;
 
