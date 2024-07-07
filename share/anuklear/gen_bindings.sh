@@ -8,6 +8,7 @@ DEFINES="-DNK_INCLUDE_FIXED_TYPES=1 \
          -DNK_INCLUDE_FONT_BAKING=1 \
          -DNK_INCLUDE_DEFAULT_FONT=1 \
          -DNK_ZERO_COMMAND_MEMORY=1"
+        #  -DNK_BUTTON_TRIGGER_ON_RELEASE=1 \
         #  -DNK_UINT_DRAW_INDEX=1 \
 # TODO:
 # #define NK_INCLUDE_COMMAND_USERDATA 1
@@ -85,6 +86,9 @@ sed -i '/-- some language glyph codepoint ranges/i \
     ' nuklear_h.ads
 
 sed -i 's/nuklear_h/Nuklear/' nuklear_h.ads
+
+sed -i '/subtype nk_bool is Extensions.bool/d ' nuklear_h.ads
+sed -i 's/nk_bool/C_bool/g' nuklear_h.ads
 
 mv nuklear_h.ads src/nuklear.ads
 
