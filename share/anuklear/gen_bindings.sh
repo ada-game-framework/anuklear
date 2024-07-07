@@ -8,7 +8,7 @@ DEFINES="-DNK_INCLUDE_FIXED_TYPES=1 -DNK_INCLUDE_STANDARD_BOOL=1 \
 # TODO:
 # #define NK_INCLUDE_COMMAND_USERDATA 1
 
-gcc -fdump-ada-spec-slim -C -c ${DEFINES} ./Nuklear/nuklear.h
+gcc -fdump-ada-spec-slim -C -c ${DEFINES} ./include/nuklear.h
 
 sed -i 's/with bits_stdint_intn_h;//' nuklear_h.ads
 sed -i 's/bits_stdint_intn_h.int8_t;/Interfaces.Integer_8;/' nuklear_h.ads
@@ -86,7 +86,7 @@ mv nuklear_h.ads src/nuklear.ads
 
 ## Renderer
 
-gcc -fdump-ada-spec-slim -C -c ./Nuklear/demo/sdl_renderer/nuklear_sdl_renderer.h
+gcc -fdump-ada-spec-slim -C -c ./include/nuklear_sdl_renderer.h
 
 # sed -i 's/ use Interfaces.C;//' nuklear_sdl_renderer_h.ads
 
