@@ -25,11 +25,11 @@ project ANuklear is
    for Library_Kind use Library_Type;
 
    package Compiler is
-      C_Switches := ("-I../../Nuklear");
+      C_Switches := ("-I../../include");
 
       case Renderer is
          when "sdl2" =>
-            for Switches ("libnuklear.c") use ("-DRENDER_SDL=1");
+            for Switches ("libnuklear.c") use ("-DRENDER_SDL=1", "-ggdb");
             -- for Switches ("renderer.c") use C_Switches & ("-DRENDER_SDL", "-I../../Nuklear/demo/sdl_renderer");
       end case;
 
