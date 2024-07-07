@@ -4012,18 +4012,18 @@ package Nuklear is
   -- *
   -- * =============================================================================  
 
-   subtype nk_text_align is unsigned;
-   TEXT_ALIGN_LEFT : constant nk_text_align := 1;
-   TEXT_ALIGN_CENTERED : constant nk_text_align := 2;
-   TEXT_ALIGN_RIGHT : constant nk_text_align := 4;
-   TEXT_ALIGN_TOP : constant nk_text_align := 8;
-   TEXT_ALIGN_MIDDLE : constant nk_text_align := 16;
-   TEXT_ALIGN_BOTTOM : constant nk_text_align := 32;  -- ./include/nuklear.h:3138
+   subtype text_align is unsigned;
+   TEXT_ALIGN_LEFT : constant text_align := 1;
+   TEXT_ALIGN_CENTERED : constant text_align := 2;
+   TEXT_ALIGN_RIGHT : constant text_align := 4;
+   TEXT_ALIGN_TOP : constant text_align := 8;
+   TEXT_ALIGN_MIDDLE : constant text_align := 16;
+   TEXT_ALIGN_BOTTOM : constant text_align := 32;  -- ./include/nuklear.h:3138
 
-   subtype nk_text_alignment is unsigned;
-   TEXT_LEFT : constant nk_text_alignment := 17;
-   TEXT_CENTERED : constant nk_text_alignment := 18;
-   TEXT_RIGHT : constant nk_text_alignment := 20;  -- ./include/nuklear.h:3146
+   subtype text_alignment is text_align;
+   TEXT_LEFT : constant text_alignment := 17;
+   TEXT_CENTERED : constant text_alignment := 18;
+   TEXT_RIGHT : constant text_alignment := 20;  -- ./include/nuklear.h:3146
 
    procedure text
      (arg1 : access nk_context;
