@@ -90,7 +90,12 @@ sed -i 's/nuklear_h/Nuklear/' nuklear_h.ads
 sed -i '/subtype nk_bool is Extensions.bool/d ' nuklear_h.ads
 sed -i 's/nk_bool/C_bool/g' nuklear_h.ads
 
+sed -i 's/subtype nk_text_align is unsigned;/subtype text_align is unsigned;/' nuklear_h.ads
+sed -i 's/constant nk_text_align :=/constant text_align :=/' nuklear_h.ads
 sed -i 's/nk_text_align_//' nuklear_h.ads
+
+sed -i 's/subtype nk_text_alignment is unsigned;/subtype text_alignment is text_align;/' nuklear_h.ads
+sed -i 's/constant nk_text_alignment :=/constant text_alignment :=/' nuklear_h.ads
 sed -i 's/nk_text_alignment_//' nuklear_h.ads
 
 mv nuklear_h.ads src/nuklear.ads
