@@ -90,6 +90,9 @@ sed -i 's/nuklear_h/Nuklear/' nuklear_h.ads
 sed -i '/subtype nk_bool is Extensions.bool/d ' nuklear_h.ads
 sed -i 's/nk_bool/C_bool/g' nuklear_h.ads
 
+sed -i 's/nk_text_align_//' nuklear_h.ads
+sed -i 's/nk_text_alignment_//' nuklear_h.ads
+
 mv nuklear_h.ads src/nuklear.ads
 
 ## Renderer
