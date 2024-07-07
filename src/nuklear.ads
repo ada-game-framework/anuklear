@@ -257,7 +257,7 @@ package Nuklear is
   --/// INCLUDE_DEFAULT_ALLOCATOR    | If defined it will include header `<stdlib.h>` and provide additional functions to use this library without caring for memory allocation control and therefore ease memory management.
   --/// INCLUDE_STANDARD_IO          | If defined it will include header `<stdio.h>` and provide additional functions depending on file loading.
   --/// INCLUDE_STANDARD_VARARGS     | If defined it will include header <stdarg.h> and provide additional functions depending on file loading.
-  --/// INCLUDE_STANDARD_BOOL        | If defined it will include header `<stdbool.h>` for nk_bool otherwise nuklear defines nk_bool as int.
+  --/// INCLUDE_STANDARD_BOOL        | If defined it will include header `<stdbool.h>` for C_bool otherwise nuklear defines C_bool as int.
   --/// INCLUDE_VERTEX_BUFFER_OUTPUT | Defining this adds a vertex draw command list backend to this library, which allows you to convert queue commands into vertex draw commands. This is mainly if you need a hardware accessible format for OpenGL, DirectX, Vulkan, Metal,...
   --/// INCLUDE_FONT_BAKING          | Defining this adds `stb_truetype` and `stb_rect_pack` implementation to this library and provides font baking and rendering. If you already have font handling or do not want to use this font handler you don't have to define it.
   --/// INCLUDE_DEFAULT_FONT         | Defining this adds the default font: ProggyClean.ttf into this library which can be loaded into a font atlas and allows using this library without having a truetype font
@@ -413,7 +413,6 @@ package Nuklear is
 
    subtype nk_ptr is unsigned;  -- ./include/nuklear.h:419
 
-   subtype nk_bool is Extensions.bool;  -- ./include/nuklear.h:420
 
    subtype nk_hash is nk_uint;  -- ./include/nuklear.h:422
 
@@ -613,7 +612,7 @@ package Nuklear is
    with Convention => C;  -- ./include/nuklear.h:503
 
    type nk_text_edit;
-   type nk_plugin_filter is access function (arg1 : access constant nk_text_edit; arg2 : nk_rune) return nk_bool
+   type nk_plugin_filter is access function (arg1 : access constant nk_text_edit; arg2 : nk_rune) return C_bool
    with Convention => C;  -- ./include/nuklear.h:504
 
    type nk_plugin_paste is access procedure (arg1 : nk_handle; arg2 : access nk_text_edit)
@@ -694,7 +693,7 @@ package Nuklear is
   --/// Should be used if you don't want to be bothered with memory management in nuklear.
   --///
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_init_default(struct nk_context *ctx, const struct nk_user_font *font);
+  --/// C_bool nk_init_default(struct nk_context *ctx, const struct nk_user_font *font);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -708,7 +707,7 @@ package Nuklear is
 
    type nk_context;
    type nk_user_font;
-   function init_default (arg1 : access nk_context; arg2 : access constant nk_user_font) return nk_bool  -- ./include/nuklear.h:584
+   function init_default (arg1 : access nk_context; arg2 : access constant nk_user_font) return C_bool  -- ./include/nuklear.h:584
    with Import => True, 
         Convention => C, 
         External_Name => "nk_init_default";
@@ -721,7 +720,7 @@ package Nuklear is
   --/// and only the required amount of memory will actually be committed.
   --///
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_init_fixed(struct nk_context *ctx, void *memory, nk_size size, const struct nk_user_font *font);
+  --/// C_bool nk_init_fixed(struct nk_context *ctx, void *memory, nk_size size, const struct nk_user_font *font);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// !!! Warning
@@ -741,7 +740,7 @@ package Nuklear is
      (arg1 : access nk_context;
       memory : System.Address;
       size : nk_size;
-      arg4 : access constant nk_user_font) return nk_bool  -- ./include/nuklear.h:609
+      arg4 : access constant nk_user_font) return C_bool  -- ./include/nuklear.h:609
    with Import => True, 
         Convention => C, 
         External_Name => "nk_init_fixed";
@@ -752,7 +751,7 @@ package Nuklear is
   --/// interface to nuklear. Can be useful for cases like monitoring memory consumption.
   --///
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_init(struct nk_context *ctx, struct nk_allocator *alloc, const struct nk_user_font *font);
+  --/// C_bool nk_init(struct nk_context *ctx, struct nk_allocator *alloc, const struct nk_user_font *font);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -767,7 +766,7 @@ package Nuklear is
    function init
      (arg1 : access nk_context;
       arg2 : access nk_allocator;
-      arg3 : access constant nk_user_font) return nk_bool  -- ./include/nuklear.h:627
+      arg3 : access constant nk_user_font) return C_bool  -- ./include/nuklear.h:627
    with Import => True, 
         Convention => C, 
         External_Name => "nk_init";
@@ -778,7 +777,7 @@ package Nuklear is
   --/// used for allocating windows, panels and state tables.
   --///
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_init_custom(struct nk_context *ctx, struct nk_buffer *cmds, struct nk_buffer *pool, const struct nk_user_font *font);
+  --/// C_bool nk_init_custom(struct nk_context *ctx, struct nk_buffer *cmds, struct nk_buffer *pool, const struct nk_user_font *font);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -796,7 +795,7 @@ package Nuklear is
      (arg1 : access nk_context;
       cmds : access nk_buffer;
       pool : access nk_buffer;
-      arg4 : access constant nk_user_font) return nk_bool  -- ./include/nuklear.h:646
+      arg4 : access constant nk_user_font) return C_bool  -- ./include/nuklear.h:646
    with Import => True, 
         Convention => C, 
         External_Name => "nk_init_custom";
@@ -1007,7 +1006,7 @@ package Nuklear is
   --/// Mirrors the state of a specific key to nuklear
   --///
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// void nk_input_key(struct nk_context*, enum nk_keys key, nk_bool down);
+  --/// void nk_input_key(struct nk_context*, enum nk_keys key, C_bool down);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -1020,7 +1019,7 @@ package Nuklear is
    procedure input_key
      (arg1 : access nk_context;
       arg2 : nk_keys;
-      down : nk_bool)  -- ./include/nuklear.h:837
+      down : C_bool)  -- ./include/nuklear.h:837
    with Import => True, 
         Convention => C, 
         External_Name => "nk_input_key";
@@ -1029,7 +1028,7 @@ package Nuklear is
   --/// Mirrors the state of a specific mouse button to nuklear
   --///
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// void nk_input_button(struct nk_context *ctx, enum nk_buttons btn, int x, int y, nk_bool down);
+  --/// void nk_input_button(struct nk_context *ctx, enum nk_buttons btn, int x, int y, C_bool down);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -1046,7 +1045,7 @@ package Nuklear is
       arg2 : nk_buttons;
       x : int;
       y : int;
-      down : nk_bool)  -- ./include/nuklear.h:853
+      down : C_bool)  -- ./include/nuklear.h:853
    with Import => True, 
         Convention => C, 
         External_Name => "nk_input_button";
@@ -1772,7 +1771,7 @@ package Nuklear is
   --/// window (unless hidden) or otherwise the window gets removed
   --///
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_begin(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
+  --/// C_bool nk_begin(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -1790,7 +1789,7 @@ package Nuklear is
      (ctx : access nk_context;
       title : Interfaces.C.char_array;
       bounds : nk_rect_t;
-      flags : nk_flags) return nk_bool  -- ./include/nuklear.h:1501
+      flags : nk_flags) return C_bool  -- ./include/nuklear.h:1501
    with Import => True, 
         Convention => C, 
         External_Name => "nk_begin";
@@ -1800,7 +1799,7 @@ package Nuklear is
   --/// windows with same title but not name
   --///
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_begin_titled(struct nk_context *ctx, const char *name, const char *title, struct nk_rect bounds, nk_flags flags);
+  --/// C_bool nk_begin_titled(struct nk_context *ctx, const char *name, const char *title, struct nk_rect bounds, nk_flags flags);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -1820,7 +1819,7 @@ package Nuklear is
       name : Interfaces.C.char_array;
       title : Interfaces.C.char_array;
       bounds : nk_rect_t;
-      flags : nk_flags) return nk_bool  -- ./include/nuklear.h:1521
+      flags : nk_flags) return C_bool  -- ./include/nuklear.h:1521
    with Import => True, 
         Convention => C, 
         External_Name => "nk_begin_titled";
@@ -2143,7 +2142,7 @@ package Nuklear is
   --/// !!! WARNING
   --///     Only call this function between calls `nk_begin_xxx` and `nk_end`
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_window_has_focus(const struct nk_context *ctx);
+  --/// C_bool nk_window_has_focus(const struct nk_context *ctx);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -2153,7 +2152,7 @@ package Nuklear is
   --/// Returns `false(0)` if current window is not active or `true(1)` if it is
   -- 
 
-   function window_has_focus (arg1 : access constant nk_context) return nk_bool  -- ./include/nuklear.h:1773
+   function window_has_focus (arg1 : access constant nk_context) return C_bool  -- ./include/nuklear.h:1773
    with Import => True, 
         Convention => C, 
         External_Name => "nk_window_has_focus";
@@ -2163,7 +2162,7 @@ package Nuklear is
   --/// !!! WARNING
   --///     Only call this function between calls `nk_begin_xxx` and `nk_end`
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_window_is_hovered(struct nk_context *ctx);
+  --/// C_bool nk_window_is_hovered(struct nk_context *ctx);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -2173,7 +2172,7 @@ package Nuklear is
   --/// Returns `true(1)` if current window is hovered or `false(0)` otherwise
   -- 
 
-   function window_is_hovered (arg1 : access nk_context) return nk_bool  -- ./include/nuklear.h:1788
+   function window_is_hovered (arg1 : access nk_context) return C_bool  -- ./include/nuklear.h:1788
    with Import => True, 
         Convention => C, 
         External_Name => "nk_window_is_hovered";
@@ -2181,7 +2180,7 @@ package Nuklear is
   --/// #### nk_window_is_collapsed
   --/// Returns if the window with given name is currently minimized/collapsed
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_window_is_collapsed(struct nk_context *ctx, const char *name);
+  --/// C_bool nk_window_is_collapsed(struct nk_context *ctx, const char *name);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -2193,7 +2192,7 @@ package Nuklear is
   --/// found or is not minimized
   -- 
 
-   function window_is_collapsed (ctx : access nk_context; name : Interfaces.C.char_array) return nk_bool  -- ./include/nuklear.h:1803
+   function window_is_collapsed (ctx : access nk_context; name : Interfaces.C.char_array) return C_bool  -- ./include/nuklear.h:1803
    with Import => True, 
         Convention => C, 
         External_Name => "nk_window_is_collapsed";
@@ -2201,7 +2200,7 @@ package Nuklear is
   --/// #### nk_window_is_closed
   --/// Returns if the window with given name was closed by calling `nk_close`
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_window_is_closed(struct nk_context *ctx, const char *name);
+  --/// C_bool nk_window_is_closed(struct nk_context *ctx, const char *name);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -2212,7 +2211,7 @@ package Nuklear is
   --/// Returns `true(1)` if current window was closed or `false(0)` window not found or not closed
   -- 
 
-   function window_is_closed (arg1 : access nk_context; arg2 : Interfaces.C.char_array) return nk_bool  -- ./include/nuklear.h:1817
+   function window_is_closed (arg1 : access nk_context; arg2 : Interfaces.C.char_array) return C_bool  -- ./include/nuklear.h:1817
    with Import => True, 
         Convention => C, 
         External_Name => "nk_window_is_closed";
@@ -2220,7 +2219,7 @@ package Nuklear is
   --/// #### nk_window_is_hidden
   --/// Returns if the window with given name is hidden
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_window_is_hidden(struct nk_context *ctx, const char *name);
+  --/// C_bool nk_window_is_hidden(struct nk_context *ctx, const char *name);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -2231,7 +2230,7 @@ package Nuklear is
   --/// Returns `true(1)` if current window is hidden or `false(0)` window not found or visible
   -- 
 
-   function window_is_hidden (arg1 : access nk_context; arg2 : Interfaces.C.char_array) return nk_bool  -- ./include/nuklear.h:1831
+   function window_is_hidden (arg1 : access nk_context; arg2 : Interfaces.C.char_array) return C_bool  -- ./include/nuklear.h:1831
    with Import => True, 
         Convention => C, 
         External_Name => "nk_window_is_hidden";
@@ -2239,7 +2238,7 @@ package Nuklear is
   --/// #### nk_window_is_active
   --/// Same as nk_window_has_focus for some reason
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_window_is_active(struct nk_context *ctx, const char *name);
+  --/// C_bool nk_window_is_active(struct nk_context *ctx, const char *name);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -2250,7 +2249,7 @@ package Nuklear is
   --/// Returns `true(1)` if current window is active or `false(0)` window not found or not active
   -- 
 
-   function window_is_active (arg1 : access nk_context; arg2 : Interfaces.C.char_array) return nk_bool  -- ./include/nuklear.h:1845
+   function window_is_active (arg1 : access nk_context; arg2 : Interfaces.C.char_array) return C_bool  -- ./include/nuklear.h:1845
    with Import => True, 
         Convention => C, 
         External_Name => "nk_window_is_active";
@@ -2258,7 +2257,7 @@ package Nuklear is
   --/// #### nk_window_is_any_hovered
   --/// Returns if the any window is being hovered
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_window_is_any_hovered(struct nk_context*);
+  --/// C_bool nk_window_is_any_hovered(struct nk_context*);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -2268,7 +2267,7 @@ package Nuklear is
   --/// Returns `true(1)` if any window is hovered or `false(0)` otherwise
   -- 
 
-   function window_is_any_hovered (arg1 : access nk_context) return nk_bool  -- ./include/nuklear.h:1858
+   function window_is_any_hovered (arg1 : access nk_context) return C_bool  -- ./include/nuklear.h:1858
    with Import => True, 
         Convention => C, 
         External_Name => "nk_window_is_any_hovered";
@@ -2278,7 +2277,7 @@ package Nuklear is
   --/// Can be used to decide if input should be processed by UI or your specific input handling.
   --/// Example could be UI and 3D camera to move inside a 3D space.
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_item_is_any_active(struct nk_context*);
+  --/// C_bool nk_item_is_any_active(struct nk_context*);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -2288,7 +2287,7 @@ package Nuklear is
   --/// Returns `true(1)` if any window is hovered or any item is active or `false(0)` otherwise
   -- 
 
-   function item_is_any_active (arg1 : access nk_context) return nk_bool  -- ./include/nuklear.h:1873
+   function item_is_any_active (arg1 : access nk_context) return C_bool  -- ./include/nuklear.h:1873
    with Import => True, 
         Convention => C, 
         External_Name => "nk_item_is_any_active";
@@ -2518,7 +2517,7 @@ package Nuklear is
    procedure rule_horizontal
      (ctx : access nk_context;
       color : nk_color;
-      rounding : nk_bool)  -- ./include/nuklear.h:2019
+      rounding : C_bool)  -- ./include/nuklear.h:2019
    with Import => True, 
         Convention => C, 
         External_Name => "nk_rule_horizontal";
@@ -3355,7 +3354,7 @@ package Nuklear is
   --/// #### nk_group_begin
   --/// Starts a new widget group. Requires a previous layouting function to specify a pos/size.
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_group_begin(struct nk_context*, const char *title, nk_flags);
+  --/// C_bool nk_group_begin(struct nk_context*, const char *title, nk_flags);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -3370,7 +3369,7 @@ package Nuklear is
    function group_begin
      (arg1 : access nk_context;
       title : Interfaces.C.char_array;
-      arg3 : nk_flags) return nk_bool  -- ./include/nuklear.h:2726
+      arg3 : nk_flags) return C_bool  -- ./include/nuklear.h:2726
    with Import => True, 
         Convention => C, 
         External_Name => "nk_group_begin";
@@ -3378,7 +3377,7 @@ package Nuklear is
   --/// #### nk_group_begin_titled
   --/// Starts a new widget group. Requires a previous layouting function to specify a pos/size.
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_group_begin_titled(struct nk_context*, const char *name, const char *title, nk_flags);
+  --/// C_bool nk_group_begin_titled(struct nk_context*, const char *name, const char *title, nk_flags);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -3395,7 +3394,7 @@ package Nuklear is
      (arg1 : access nk_context;
       name : Interfaces.C.char_array;
       title : Interfaces.C.char_array;
-      arg4 : nk_flags) return nk_bool  -- ./include/nuklear.h:2742
+      arg4 : nk_flags) return C_bool  -- ./include/nuklear.h:2742
    with Import => True, 
         Convention => C, 
         External_Name => "nk_group_begin_titled";
@@ -3420,7 +3419,7 @@ package Nuklear is
   --/// starts a new widget group. requires a previous layouting function to specify
   --/// a size. Does not keep track of scrollbar.
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_group_scrolled_offset_begin(struct nk_context*, nk_uint *x_offset, nk_uint *y_offset, const char *title, nk_flags flags);
+  --/// C_bool nk_group_scrolled_offset_begin(struct nk_context*, nk_uint *x_offset, nk_uint *y_offset, const char *title, nk_flags flags);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -3439,7 +3438,7 @@ package Nuklear is
       x_offset : access nk_uint;
       y_offset : access nk_uint;
       title : Interfaces.C.char_array;
-      flags : nk_flags) return nk_bool  -- ./include/nuklear.h:2771
+      flags : nk_flags) return C_bool  -- ./include/nuklear.h:2771
    with Import => True, 
         Convention => C, 
         External_Name => "nk_group_scrolled_offset_begin";
@@ -3448,7 +3447,7 @@ package Nuklear is
   --/// Starts a new widget group. requires a previous
   --/// layouting function to specify a size. Does not keep track of scrollbar.
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_group_scrolled_begin(struct nk_context*, struct nk_scroll *off, const char *title, nk_flags);
+  --/// C_bool nk_group_scrolled_begin(struct nk_context*, struct nk_scroll *off, const char *title, nk_flags);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -3465,7 +3464,7 @@ package Nuklear is
      (arg1 : access nk_context;
       off : access nk_scroll;
       title : Interfaces.C.char_array;
-      arg4 : nk_flags) return nk_bool  -- ./include/nuklear.h:2788
+      arg4 : nk_flags) return C_bool  -- ./include/nuklear.h:2788
    with Import => True, 
         Convention => C, 
         External_Name => "nk_group_scrolled_begin";
@@ -3646,7 +3645,7 @@ package Nuklear is
   --/// Start a collapsible UI section with internal state management with full
   --/// control over internal unique ID used to store state
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_tree_push_hashed(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states initial_state, const char *hash, int len,int seed);
+  --/// C_bool nk_tree_push_hashed(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states initial_state, const char *hash, int len,int seed);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -3669,7 +3668,7 @@ package Nuklear is
       initial_state : nk_collapse_states;
       hash : Interfaces.C.char_array;
       len : int;
-      seed : int) return nk_bool  -- ./include/nuklear.h:2956
+      seed : int) return C_bool  -- ./include/nuklear.h:2956
    with Import => True, 
         Convention => C, 
         External_Name => "nk_tree_push_hashed";
@@ -3721,7 +3720,7 @@ package Nuklear is
   --/// Start a collapsible UI section with internal state management with full
   --/// control over internal unique ID used to store state
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_tree_image_push_hashed(struct nk_context*, enum nk_tree_type, struct nk_image, const char *title, enum nk_collapse_states initial_state, const char *hash, int len,int seed);
+  --/// C_bool nk_tree_image_push_hashed(struct nk_context*, enum nk_tree_type, struct nk_image, const char *title, enum nk_collapse_states initial_state, const char *hash, int len,int seed);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -3746,7 +3745,7 @@ package Nuklear is
       initial_state : nk_collapse_states;
       hash : Interfaces.C.char_array;
       len : int;
-      seed : int) return nk_bool  -- ./include/nuklear.h:3020
+      seed : int) return C_bool  -- ./include/nuklear.h:3020
    with Import => True, 
         Convention => C, 
         External_Name => "nk_tree_image_push_hashed";
@@ -3770,7 +3769,7 @@ package Nuklear is
   --/// #### nk_tree_state_push
   --/// Start a collapsible UI section with external state management
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_tree_state_push(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states *state);
+  --/// C_bool nk_tree_state_push(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states *state);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -3787,7 +3786,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : nk_tree_type;
       title : Interfaces.C.char_array;
-      state : access nk_collapse_states) return nk_bool  -- ./include/nuklear.h:3047
+      state : access nk_collapse_states) return C_bool  -- ./include/nuklear.h:3047
    with Import => True, 
         Convention => C, 
         External_Name => "nk_tree_state_push";
@@ -3795,7 +3794,7 @@ package Nuklear is
   --/// #### nk_tree_state_image_push
   --/// Start a collapsible UI section with image and label header and external state management
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-  --/// nk_bool nk_tree_state_image_push(struct nk_context*, enum nk_tree_type, struct nk_image, const char *title, enum nk_collapse_states *state);
+  --/// C_bool nk_tree_state_image_push(struct nk_context*, enum nk_tree_type, struct nk_image, const char *title, enum nk_collapse_states *state);
   --/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --///
   --/// Parameter   | Description
@@ -3814,7 +3813,7 @@ package Nuklear is
       arg2 : nk_tree_type;
       arg3 : nk_image_t;
       title : Interfaces.C.char_array;
-      state : access nk_collapse_states) return nk_bool  -- ./include/nuklear.h:3064
+      state : access nk_collapse_states) return C_bool  -- ./include/nuklear.h:3064
    with Import => True, 
         Convention => C, 
         External_Name => "nk_tree_state_image_push";
@@ -3840,10 +3839,10 @@ package Nuklear is
       arg2 : nk_tree_type;
       title : Interfaces.C.char_array;
       initial_state : nk_collapse_states;
-      selected : access nk_bool;
+      selected : access C_bool;
       hash : Interfaces.C.char_array;
       len : int;
-      seed : int) return nk_bool  -- ./include/nuklear.h:3079
+      seed : int) return C_bool  -- ./include/nuklear.h:3079
    with Import => True, 
         Convention => C, 
         External_Name => "nk_tree_element_push_hashed";
@@ -3854,10 +3853,10 @@ package Nuklear is
       arg3 : nk_image_t;
       title : Interfaces.C.char_array;
       initial_state : nk_collapse_states;
-      selected : access nk_bool;
+      selected : access C_bool;
       hash : Interfaces.C.char_array;
       len : int;
-      seed : int) return nk_bool  -- ./include/nuklear.h:3080
+      seed : int) return C_bool  -- ./include/nuklear.h:3080
    with Import => True, 
         Convention => C, 
         External_Name => "nk_tree_element_image_push_hashed";
@@ -3892,7 +3891,7 @@ package Nuklear is
       id : Interfaces.C.char_array;
       arg4 : nk_flags;
       row_height : int;
-      row_count : int) return nk_bool  -- ./include/nuklear.h:3097
+      row_count : int) return C_bool  -- ./include/nuklear.h:3097
    with Import => True, 
         Convention => C, 
         External_Name => "nk_list_view_begin";
@@ -3974,12 +3973,12 @@ package Nuklear is
         Convention => C, 
         External_Name => "nk_widget_height";
 
-   function widget_is_hovered (arg1 : access nk_context) return nk_bool  -- ./include/nuklear.h:3127
+   function widget_is_hovered (arg1 : access nk_context) return C_bool  -- ./include/nuklear.h:3127
    with Import => True, 
         Convention => C, 
         External_Name => "nk_widget_is_hovered";
 
-   function widget_is_mouse_clicked (arg1 : access nk_context; arg2 : nk_buttons) return nk_bool  -- ./include/nuklear.h:3128
+   function widget_is_mouse_clicked (arg1 : access nk_context; arg2 : nk_buttons) return C_bool  -- ./include/nuklear.h:3128
    with Import => True, 
         Convention => C, 
         External_Name => "nk_widget_is_mouse_clicked";
@@ -3987,7 +3986,7 @@ package Nuklear is
    function widget_has_mouse_click_down
      (arg1 : access nk_context;
       arg2 : nk_buttons;
-      down : nk_bool) return nk_bool  -- ./include/nuklear.h:3129
+      down : C_bool) return C_bool  -- ./include/nuklear.h:3129
    with Import => True, 
         Convention => C, 
         External_Name => "nk_widget_has_mouse_click_down";
@@ -4114,27 +4113,27 @@ package Nuklear is
    function button_text
      (arg1 : access nk_context;
       title : Interfaces.C.char_array;
-      len : int) return nk_bool  -- ./include/nuklear.h:3183
+      len : int) return C_bool  -- ./include/nuklear.h:3183
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_text";
 
-   function button_label (arg1 : access nk_context; title : Interfaces.C.char_array) return nk_bool  -- ./include/nuklear.h:3184
+   function button_label (arg1 : access nk_context; title : Interfaces.C.char_array) return C_bool  -- ./include/nuklear.h:3184
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_label";
 
-   function button_color (arg1 : access nk_context; arg2 : nk_color) return nk_bool  -- ./include/nuklear.h:3185
+   function button_color (arg1 : access nk_context; arg2 : nk_color) return C_bool  -- ./include/nuklear.h:3185
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_color";
 
-   function button_symbol (arg1 : access nk_context; arg2 : nk_symbol_type) return nk_bool  -- ./include/nuklear.h:3186
+   function button_symbol (arg1 : access nk_context; arg2 : nk_symbol_type) return C_bool  -- ./include/nuklear.h:3186
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_symbol";
 
-   function button_image (arg1 : access nk_context; img : nk_image_t) return nk_bool  -- ./include/nuklear.h:3187
+   function button_image (arg1 : access nk_context; img : nk_image_t) return C_bool  -- ./include/nuklear.h:3187
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_image";
@@ -4143,7 +4142,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : nk_symbol_type;
       arg3 : Interfaces.C.char_array;
-      text_alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3188
+      text_alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3188
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_symbol_label";
@@ -4153,7 +4152,7 @@ package Nuklear is
       arg2 : nk_symbol_type;
       arg3 : Interfaces.C.char_array;
       arg4 : int;
-      alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3189
+      alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3189
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_symbol_text";
@@ -4162,7 +4161,7 @@ package Nuklear is
      (arg1 : access nk_context;
       img : nk_image_t;
       arg3 : Interfaces.C.char_array;
-      text_alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3190
+      text_alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3190
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_image_label";
@@ -4172,7 +4171,7 @@ package Nuklear is
       img : nk_image_t;
       arg3 : Interfaces.C.char_array;
       arg4 : int;
-      alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3191
+      alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3191
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_image_text";
@@ -4182,7 +4181,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : access constant nk_style_button;
       title : Interfaces.C.char_array;
-      len : int) return nk_bool  -- ./include/nuklear.h:3192
+      len : int) return C_bool  -- ./include/nuklear.h:3192
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_text_styled";
@@ -4190,7 +4189,7 @@ package Nuklear is
    function button_label_styled
      (arg1 : access nk_context;
       arg2 : access constant nk_style_button;
-      title : Interfaces.C.char_array) return nk_bool  -- ./include/nuklear.h:3193
+      title : Interfaces.C.char_array) return C_bool  -- ./include/nuklear.h:3193
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_label_styled";
@@ -4198,7 +4197,7 @@ package Nuklear is
    function button_symbol_styled
      (arg1 : access nk_context;
       arg2 : access constant nk_style_button;
-      arg3 : nk_symbol_type) return nk_bool  -- ./include/nuklear.h:3194
+      arg3 : nk_symbol_type) return C_bool  -- ./include/nuklear.h:3194
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_symbol_styled";
@@ -4206,7 +4205,7 @@ package Nuklear is
    function button_image_styled
      (arg1 : access nk_context;
       arg2 : access constant nk_style_button;
-      img : nk_image_t) return nk_bool  -- ./include/nuklear.h:3195
+      img : nk_image_t) return C_bool  -- ./include/nuklear.h:3195
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_image_styled";
@@ -4217,7 +4216,7 @@ package Nuklear is
       arg3 : nk_symbol_type;
       arg4 : Interfaces.C.char_array;
       arg5 : int;
-      alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3196
+      alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3196
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_symbol_text_styled";
@@ -4227,7 +4226,7 @@ package Nuklear is
       style : access constant nk_style_button;
       symbol : nk_symbol_type;
       title : Interfaces.C.char_array;
-      align : nk_flags) return nk_bool  -- ./include/nuklear.h:3197
+      align : nk_flags) return C_bool  -- ./include/nuklear.h:3197
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_symbol_label_styled";
@@ -4237,7 +4236,7 @@ package Nuklear is
       arg2 : access constant nk_style_button;
       img : nk_image_t;
       arg4 : Interfaces.C.char_array;
-      text_alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3198
+      text_alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3198
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_image_label_styled";
@@ -4248,7 +4247,7 @@ package Nuklear is
       img : nk_image_t;
       arg4 : Interfaces.C.char_array;
       arg5 : int;
-      alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3199
+      alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3199
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_image_text_styled";
@@ -4258,12 +4257,12 @@ package Nuklear is
         Convention => C, 
         External_Name => "nk_button_set_behavior";
 
-   function button_push_behavior (arg1 : access nk_context; arg2 : nk_button_behavior) return nk_bool  -- ./include/nuklear.h:3201
+   function button_push_behavior (arg1 : access nk_context; arg2 : nk_button_behavior) return C_bool  -- ./include/nuklear.h:3201
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_push_behavior";
 
-   function button_pop_behavior (arg1 : access nk_context) return nk_bool  -- ./include/nuklear.h:3202
+   function button_pop_behavior (arg1 : access nk_context) return C_bool  -- ./include/nuklear.h:3202
    with Import => True, 
         Convention => C, 
         External_Name => "nk_button_pop_behavior";
@@ -4277,7 +4276,7 @@ package Nuklear is
    function check_label
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
-      active : nk_bool) return nk_bool  -- ./include/nuklear.h:3208
+      active : C_bool) return C_bool  -- ./include/nuklear.h:3208
    with Import => True, 
         Convention => C, 
         External_Name => "nk_check_label";
@@ -4286,7 +4285,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
       arg3 : int;
-      active : nk_bool) return nk_bool  -- ./include/nuklear.h:3209
+      active : C_bool) return C_bool  -- ./include/nuklear.h:3209
    with Import => True, 
         Convention => C, 
         External_Name => "nk_check_text";
@@ -4295,9 +4294,9 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
       arg3 : int;
-      active : nk_bool;
+      active : C_bool;
       widget_alignment : nk_flags;
-      text_alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3210
+      text_alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3210
    with Import => True, 
         Convention => C, 
         External_Name => "nk_check_text_align";
@@ -4324,7 +4323,7 @@ package Nuklear is
    function checkbox_label
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
-      active : access nk_bool) return nk_bool  -- ./include/nuklear.h:3213
+      active : access C_bool) return C_bool  -- ./include/nuklear.h:3213
    with Import => True, 
         Convention => C, 
         External_Name => "nk_checkbox_label";
@@ -4332,9 +4331,9 @@ package Nuklear is
    function checkbox_label_align
      (ctx : access nk_context;
       label : Interfaces.C.char_array;
-      active : access nk_bool;
+      active : access C_bool;
       widget_alignment : nk_flags;
-      text_alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3214
+      text_alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3214
    with Import => True, 
         Convention => C, 
         External_Name => "nk_checkbox_label_align";
@@ -4343,7 +4342,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
       arg3 : int;
-      active : access nk_bool) return nk_bool  -- ./include/nuklear.h:3215
+      active : access C_bool) return C_bool  -- ./include/nuklear.h:3215
    with Import => True, 
         Convention => C, 
         External_Name => "nk_checkbox_text";
@@ -4352,9 +4351,9 @@ package Nuklear is
      (ctx : access nk_context;
       text : Interfaces.C.char_array;
       len : int;
-      active : access nk_bool;
+      active : access C_bool;
       widget_alignment : nk_flags;
-      text_alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3216
+      text_alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3216
    with Import => True, 
         Convention => C, 
         External_Name => "nk_checkbox_text_align";
@@ -4363,7 +4362,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
       flags : access unsigned;
-      value : unsigned) return nk_bool  -- ./include/nuklear.h:3217
+      value : unsigned) return C_bool  -- ./include/nuklear.h:3217
    with Import => True, 
         Convention => C, 
         External_Name => "nk_checkbox_flags_label";
@@ -4373,7 +4372,7 @@ package Nuklear is
       arg2 : Interfaces.C.char_array;
       arg3 : int;
       flags : access unsigned;
-      value : unsigned) return nk_bool  -- ./include/nuklear.h:3218
+      value : unsigned) return C_bool  -- ./include/nuklear.h:3218
    with Import => True, 
         Convention => C, 
         External_Name => "nk_checkbox_flags_text";
@@ -4387,7 +4386,7 @@ package Nuklear is
    function radio_label
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
-      active : access nk_bool) return nk_bool  -- ./include/nuklear.h:3224
+      active : access C_bool) return C_bool  -- ./include/nuklear.h:3224
    with Import => True, 
         Convention => C, 
         External_Name => "nk_radio_label";
@@ -4395,9 +4394,9 @@ package Nuklear is
    function radio_label_align
      (ctx : access nk_context;
       label : Interfaces.C.char_array;
-      active : access nk_bool;
+      active : access C_bool;
       widget_alignment : nk_flags;
-      text_alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3225
+      text_alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3225
    with Import => True, 
         Convention => C, 
         External_Name => "nk_radio_label_align";
@@ -4406,7 +4405,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
       arg3 : int;
-      active : access nk_bool) return nk_bool  -- ./include/nuklear.h:3226
+      active : access C_bool) return C_bool  -- ./include/nuklear.h:3226
    with Import => True, 
         Convention => C, 
         External_Name => "nk_radio_text";
@@ -4415,9 +4414,9 @@ package Nuklear is
      (ctx : access nk_context;
       text : Interfaces.C.char_array;
       len : int;
-      active : access nk_bool;
+      active : access C_bool;
       widget_alignment : nk_flags;
-      text_alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3227
+      text_alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3227
    with Import => True, 
         Convention => C, 
         External_Name => "nk_radio_text_align";
@@ -4425,7 +4424,7 @@ package Nuklear is
    function option_label
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
-      active : nk_bool) return nk_bool  -- ./include/nuklear.h:3228
+      active : C_bool) return C_bool  -- ./include/nuklear.h:3228
    with Import => True, 
         Convention => C, 
         External_Name => "nk_option_label";
@@ -4433,9 +4432,9 @@ package Nuklear is
    function option_label_align
      (ctx : access nk_context;
       label : Interfaces.C.char_array;
-      active : nk_bool;
+      active : C_bool;
       widget_alignment : nk_flags;
-      text_alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3229
+      text_alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3229
    with Import => True, 
         Convention => C, 
         External_Name => "nk_option_label_align";
@@ -4444,7 +4443,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
       arg3 : int;
-      active : nk_bool) return nk_bool  -- ./include/nuklear.h:3230
+      active : C_bool) return C_bool  -- ./include/nuklear.h:3230
    with Import => True, 
         Convention => C, 
         External_Name => "nk_option_text";
@@ -4453,9 +4452,9 @@ package Nuklear is
      (ctx : access nk_context;
       text : Interfaces.C.char_array;
       len : int;
-      is_active : nk_bool;
+      is_active : C_bool;
       widget_alignment : nk_flags;
-      text_alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3231
+      text_alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3231
    with Import => True, 
         Convention => C, 
         External_Name => "nk_option_text_align";
@@ -4470,7 +4469,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
       align : nk_flags;
-      value : access nk_bool) return nk_bool  -- ./include/nuklear.h:3237
+      value : access C_bool) return C_bool  -- ./include/nuklear.h:3237
    with Import => True, 
         Convention => C, 
         External_Name => "nk_selectable_label";
@@ -4480,7 +4479,7 @@ package Nuklear is
       arg2 : Interfaces.C.char_array;
       arg3 : int;
       align : nk_flags;
-      value : access nk_bool) return nk_bool  -- ./include/nuklear.h:3238
+      value : access C_bool) return C_bool  -- ./include/nuklear.h:3238
    with Import => True, 
         Convention => C, 
         External_Name => "nk_selectable_text";
@@ -4490,7 +4489,7 @@ package Nuklear is
       arg2 : nk_image_t;
       arg3 : Interfaces.C.char_array;
       align : nk_flags;
-      value : access nk_bool) return nk_bool  -- ./include/nuklear.h:3239
+      value : access C_bool) return C_bool  -- ./include/nuklear.h:3239
    with Import => True, 
         Convention => C, 
         External_Name => "nk_selectable_image_label";
@@ -4501,7 +4500,7 @@ package Nuklear is
       arg3 : Interfaces.C.char_array;
       arg4 : int;
       align : nk_flags;
-      value : access nk_bool) return nk_bool  -- ./include/nuklear.h:3240
+      value : access C_bool) return C_bool  -- ./include/nuklear.h:3240
    with Import => True, 
         Convention => C, 
         External_Name => "nk_selectable_image_text";
@@ -4511,7 +4510,7 @@ package Nuklear is
       arg2 : nk_symbol_type;
       arg3 : Interfaces.C.char_array;
       align : nk_flags;
-      value : access nk_bool) return nk_bool  -- ./include/nuklear.h:3241
+      value : access C_bool) return C_bool  -- ./include/nuklear.h:3241
    with Import => True, 
         Convention => C, 
         External_Name => "nk_selectable_symbol_label";
@@ -4522,7 +4521,7 @@ package Nuklear is
       arg3 : Interfaces.C.char_array;
       arg4 : int;
       align : nk_flags;
-      value : access nk_bool) return nk_bool  -- ./include/nuklear.h:3242
+      value : access C_bool) return C_bool  -- ./include/nuklear.h:3242
    with Import => True, 
         Convention => C, 
         External_Name => "nk_selectable_symbol_text";
@@ -4531,7 +4530,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
       align : nk_flags;
-      value : nk_bool) return nk_bool  -- ./include/nuklear.h:3244
+      value : C_bool) return C_bool  -- ./include/nuklear.h:3244
    with Import => True, 
         Convention => C, 
         External_Name => "nk_select_label";
@@ -4541,7 +4540,7 @@ package Nuklear is
       arg2 : Interfaces.C.char_array;
       arg3 : int;
       align : nk_flags;
-      value : nk_bool) return nk_bool  -- ./include/nuklear.h:3245
+      value : C_bool) return C_bool  -- ./include/nuklear.h:3245
    with Import => True, 
         Convention => C, 
         External_Name => "nk_select_text";
@@ -4551,7 +4550,7 @@ package Nuklear is
       arg2 : nk_image_t;
       arg3 : Interfaces.C.char_array;
       align : nk_flags;
-      value : nk_bool) return nk_bool  -- ./include/nuklear.h:3246
+      value : C_bool) return C_bool  -- ./include/nuklear.h:3246
    with Import => True, 
         Convention => C, 
         External_Name => "nk_select_image_label";
@@ -4562,7 +4561,7 @@ package Nuklear is
       arg3 : Interfaces.C.char_array;
       arg4 : int;
       align : nk_flags;
-      value : nk_bool) return nk_bool  -- ./include/nuklear.h:3247
+      value : C_bool) return C_bool  -- ./include/nuklear.h:3247
    with Import => True, 
         Convention => C, 
         External_Name => "nk_select_image_text";
@@ -4572,7 +4571,7 @@ package Nuklear is
       arg2 : nk_symbol_type;
       arg3 : Interfaces.C.char_array;
       align : nk_flags;
-      value : nk_bool) return nk_bool  -- ./include/nuklear.h:3248
+      value : C_bool) return C_bool  -- ./include/nuklear.h:3248
    with Import => True, 
         Convention => C, 
         External_Name => "nk_select_symbol_label";
@@ -4583,7 +4582,7 @@ package Nuklear is
       arg3 : Interfaces.C.char_array;
       arg4 : int;
       align : nk_flags;
-      value : nk_bool) return nk_bool  -- ./include/nuklear.h:3249
+      value : C_bool) return C_bool  -- ./include/nuklear.h:3249
    with Import => True, 
         Convention => C, 
         External_Name => "nk_select_symbol_text";
@@ -4619,7 +4618,7 @@ package Nuklear is
       min : float;
       val : access float;
       max : float;
-      step : float) return nk_bool  -- ./include/nuklear.h:3258
+      step : float) return C_bool  -- ./include/nuklear.h:3258
    with Import => True, 
         Convention => C, 
         External_Name => "nk_slider_float";
@@ -4629,7 +4628,7 @@ package Nuklear is
       min : int;
       val : access int;
       max : int;
-      step : int) return nk_bool  -- ./include/nuklear.h:3259
+      step : int) return C_bool  -- ./include/nuklear.h:3259
    with Import => True, 
         Convention => C, 
         External_Name => "nk_slider_int";
@@ -4644,7 +4643,7 @@ package Nuklear is
      (arg1 : access nk_context;
       cur : access nk_size;
       max : nk_size;
-      modifyable : nk_bool) return nk_bool  -- ./include/nuklear.h:3265
+      modifyable : C_bool) return C_bool  -- ./include/nuklear.h:3265
    with Import => True, 
         Convention => C, 
         External_Name => "nk_progress";
@@ -4653,7 +4652,7 @@ package Nuklear is
      (arg1 : access nk_context;
       cur : nk_size;
       max : nk_size;
-      modifyable : nk_bool) return nk_size  -- ./include/nuklear.h:3266
+      modifyable : C_bool) return nk_size  -- ./include/nuklear.h:3266
    with Import => True, 
         Convention => C, 
         External_Name => "nk_prog";
@@ -4675,7 +4674,7 @@ package Nuklear is
    function color_pick
      (arg1 : access nk_context;
       arg2 : access nk_colorf;
-      arg3 : nk_color_format) return nk_bool  -- ./include/nuklear.h:3274
+      arg3 : nk_color_format) return C_bool  -- ./include/nuklear.h:3274
    with Import => True, 
         Convention => C, 
         External_Name => "nk_color_pick";
@@ -5051,7 +5050,7 @@ package Nuklear is
       arg2 : nk_chart_type;
       num : int;
       min : float;
-      max : float) return nk_bool  -- ./include/nuklear.h:3526
+      max : float) return C_bool  -- ./include/nuklear.h:3526
    with Import => True, 
         Convention => C, 
         External_Name => "nk_chart_begin";
@@ -5063,7 +5062,7 @@ package Nuklear is
       active : nk_color;
       num : int;
       min : float;
-      max : float) return nk_bool  -- ./include/nuklear.h:3527
+      max : float) return C_bool  -- ./include/nuklear.h:3527
    with Import => True, 
         Convention => C, 
         External_Name => "nk_chart_begin_colored";
@@ -5140,7 +5139,7 @@ package Nuklear is
       arg2 : nk_popup_type;
       arg3 : Interfaces.C.char_array;
       arg4 : nk_flags;
-      bounds : nk_rect_t) return nk_bool  -- ./include/nuklear.h:3540
+      bounds : nk_rect_t) return C_bool  -- ./include/nuklear.h:3540
    with Import => True, 
         Convention => C, 
         External_Name => "nk_popup_begin";
@@ -5285,7 +5284,7 @@ package Nuklear is
      (arg1 : access nk_context;
       selected : Interfaces.C.char_array;
       arg3 : int;
-      size : nk_vec2_t) return nk_bool  -- ./include/nuklear.h:3563
+      size : nk_vec2_t) return C_bool  -- ./include/nuklear.h:3563
    with Import => True, 
         Convention => C, 
         External_Name => "nk_combo_begin_text";
@@ -5293,7 +5292,7 @@ package Nuklear is
    function combo_begin_label
      (arg1 : access nk_context;
       selected : Interfaces.C.char_array;
-      size : nk_vec2_t) return nk_bool  -- ./include/nuklear.h:3564
+      size : nk_vec2_t) return C_bool  -- ./include/nuklear.h:3564
    with Import => True, 
         Convention => C, 
         External_Name => "nk_combo_begin_label";
@@ -5301,7 +5300,7 @@ package Nuklear is
    function combo_begin_color
      (arg1 : access nk_context;
       color : nk_color;
-      size : nk_vec2_t) return nk_bool  -- ./include/nuklear.h:3565
+      size : nk_vec2_t) return C_bool  -- ./include/nuklear.h:3565
    with Import => True, 
         Convention => C, 
         External_Name => "nk_combo_begin_color";
@@ -5309,7 +5308,7 @@ package Nuklear is
    function combo_begin_symbol
      (arg1 : access nk_context;
       arg2 : nk_symbol_type;
-      size : nk_vec2_t) return nk_bool  -- ./include/nuklear.h:3566
+      size : nk_vec2_t) return C_bool  -- ./include/nuklear.h:3566
    with Import => True, 
         Convention => C, 
         External_Name => "nk_combo_begin_symbol";
@@ -5318,7 +5317,7 @@ package Nuklear is
      (arg1 : access nk_context;
       selected : Interfaces.C.char_array;
       arg3 : nk_symbol_type;
-      size : nk_vec2_t) return nk_bool  -- ./include/nuklear.h:3567
+      size : nk_vec2_t) return C_bool  -- ./include/nuklear.h:3567
    with Import => True, 
         Convention => C, 
         External_Name => "nk_combo_begin_symbol_label";
@@ -5328,7 +5327,7 @@ package Nuklear is
       selected : Interfaces.C.char_array;
       arg3 : int;
       arg4 : nk_symbol_type;
-      size : nk_vec2_t) return nk_bool  -- ./include/nuklear.h:3568
+      size : nk_vec2_t) return C_bool  -- ./include/nuklear.h:3568
    with Import => True, 
         Convention => C, 
         External_Name => "nk_combo_begin_symbol_text";
@@ -5336,7 +5335,7 @@ package Nuklear is
    function combo_begin_image
      (arg1 : access nk_context;
       img : nk_image_t;
-      size : nk_vec2_t) return nk_bool  -- ./include/nuklear.h:3569
+      size : nk_vec2_t) return C_bool  -- ./include/nuklear.h:3569
    with Import => True, 
         Convention => C, 
         External_Name => "nk_combo_begin_image";
@@ -5345,7 +5344,7 @@ package Nuklear is
      (arg1 : access nk_context;
       selected : Interfaces.C.char_array;
       arg3 : nk_image_t;
-      size : nk_vec2_t) return nk_bool  -- ./include/nuklear.h:3570
+      size : nk_vec2_t) return C_bool  -- ./include/nuklear.h:3570
    with Import => True, 
         Convention => C, 
         External_Name => "nk_combo_begin_image_label";
@@ -5355,7 +5354,7 @@ package Nuklear is
       selected : Interfaces.C.char_array;
       arg3 : int;
       arg4 : nk_image_t;
-      size : nk_vec2_t) return nk_bool  -- ./include/nuklear.h:3571
+      size : nk_vec2_t) return C_bool  -- ./include/nuklear.h:3571
    with Import => True, 
         Convention => C, 
         External_Name => "nk_combo_begin_image_text";
@@ -5363,7 +5362,7 @@ package Nuklear is
    function combo_item_label
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
-      alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3572
+      alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3572
    with Import => True, 
         Convention => C, 
         External_Name => "nk_combo_item_label";
@@ -5372,7 +5371,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
       arg3 : int;
-      alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3573
+      alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3573
    with Import => True, 
         Convention => C, 
         External_Name => "nk_combo_item_text";
@@ -5381,7 +5380,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : nk_image_t;
       arg3 : Interfaces.C.char_array;
-      alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3574
+      alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3574
    with Import => True, 
         Convention => C, 
         External_Name => "nk_combo_item_image_label";
@@ -5391,7 +5390,7 @@ package Nuklear is
       arg2 : nk_image_t;
       arg3 : Interfaces.C.char_array;
       arg4 : int;
-      alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3575
+      alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3575
    with Import => True, 
         Convention => C, 
         External_Name => "nk_combo_item_image_text";
@@ -5400,7 +5399,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : nk_symbol_type;
       arg3 : Interfaces.C.char_array;
-      alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3576
+      alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3576
    with Import => True, 
         Convention => C, 
         External_Name => "nk_combo_item_symbol_label";
@@ -5410,7 +5409,7 @@ package Nuklear is
       arg2 : nk_symbol_type;
       arg3 : Interfaces.C.char_array;
       arg4 : int;
-      alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3577
+      alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3577
    with Import => True, 
         Convention => C, 
         External_Name => "nk_combo_item_symbol_text";
@@ -5435,7 +5434,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : nk_flags;
       arg3 : nk_vec2_t;
-      trigger_bounds : nk_rect_t) return nk_bool  -- ./include/nuklear.h:3585
+      trigger_bounds : nk_rect_t) return C_bool  -- ./include/nuklear.h:3585
    with Import => True, 
         Convention => C, 
         External_Name => "nk_contextual_begin";
@@ -5444,7 +5443,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
       arg3 : int;
-      align : nk_flags) return nk_bool  -- ./include/nuklear.h:3586
+      align : nk_flags) return C_bool  -- ./include/nuklear.h:3586
    with Import => True, 
         Convention => C, 
         External_Name => "nk_contextual_item_text";
@@ -5452,7 +5451,7 @@ package Nuklear is
    function contextual_item_label
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
-      align : nk_flags) return nk_bool  -- ./include/nuklear.h:3587
+      align : nk_flags) return C_bool  -- ./include/nuklear.h:3587
    with Import => True, 
         Convention => C, 
         External_Name => "nk_contextual_item_label";
@@ -5461,7 +5460,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : nk_image_t;
       arg3 : Interfaces.C.char_array;
-      alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3588
+      alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3588
    with Import => True, 
         Convention => C, 
         External_Name => "nk_contextual_item_image_label";
@@ -5471,7 +5470,7 @@ package Nuklear is
       arg2 : nk_image_t;
       arg3 : Interfaces.C.char_array;
       len : int;
-      alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3589
+      alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3589
    with Import => True, 
         Convention => C, 
         External_Name => "nk_contextual_item_image_text";
@@ -5480,7 +5479,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : nk_symbol_type;
       arg3 : Interfaces.C.char_array;
-      alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3590
+      alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3590
    with Import => True, 
         Convention => C, 
         External_Name => "nk_contextual_item_symbol_label";
@@ -5490,7 +5489,7 @@ package Nuklear is
       arg2 : nk_symbol_type;
       arg3 : Interfaces.C.char_array;
       arg4 : int;
-      alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3591
+      alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3591
    with Import => True, 
         Convention => C, 
         External_Name => "nk_contextual_item_symbol_text";
@@ -5516,7 +5515,7 @@ package Nuklear is
         Convention => C, 
         External_Name => "nk_tooltip";
 
-   function tooltip_begin (arg1 : access nk_context; width : float) return nk_bool  -- ./include/nuklear.h:3604
+   function tooltip_begin (arg1 : access nk_context; width : float) return C_bool  -- ./include/nuklear.h:3604
    with Import => True, 
         Convention => C, 
         External_Name => "nk_tooltip_begin";
@@ -5547,7 +5546,7 @@ package Nuklear is
       title : Interfaces.C.char_array;
       title_len : int;
       align : nk_flags;
-      size : nk_vec2_t) return nk_bool  -- ./include/nuklear.h:3613
+      size : nk_vec2_t) return C_bool  -- ./include/nuklear.h:3613
    with Import => True, 
         Convention => C, 
         External_Name => "nk_menu_begin_text";
@@ -5556,7 +5555,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
       align : nk_flags;
-      size : nk_vec2_t) return nk_bool  -- ./include/nuklear.h:3614
+      size : nk_vec2_t) return C_bool  -- ./include/nuklear.h:3614
    with Import => True, 
         Convention => C, 
         External_Name => "nk_menu_begin_label";
@@ -5565,7 +5564,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
       arg3 : nk_image_t;
-      size : nk_vec2_t) return nk_bool  -- ./include/nuklear.h:3615
+      size : nk_vec2_t) return C_bool  -- ./include/nuklear.h:3615
    with Import => True, 
         Convention => C, 
         External_Name => "nk_menu_begin_image";
@@ -5576,7 +5575,7 @@ package Nuklear is
       arg3 : int;
       align : nk_flags;
       arg5 : nk_image_t;
-      size : nk_vec2_t) return nk_bool  -- ./include/nuklear.h:3616
+      size : nk_vec2_t) return C_bool  -- ./include/nuklear.h:3616
    with Import => True, 
         Convention => C, 
         External_Name => "nk_menu_begin_image_text";
@@ -5586,7 +5585,7 @@ package Nuklear is
       arg2 : Interfaces.C.char_array;
       align : nk_flags;
       arg4 : nk_image_t;
-      size : nk_vec2_t) return nk_bool  -- ./include/nuklear.h:3617
+      size : nk_vec2_t) return C_bool  -- ./include/nuklear.h:3617
    with Import => True, 
         Convention => C, 
         External_Name => "nk_menu_begin_image_label";
@@ -5595,7 +5594,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
       arg3 : nk_symbol_type;
-      size : nk_vec2_t) return nk_bool  -- ./include/nuklear.h:3618
+      size : nk_vec2_t) return C_bool  -- ./include/nuklear.h:3618
    with Import => True, 
         Convention => C, 
         External_Name => "nk_menu_begin_symbol";
@@ -5606,7 +5605,7 @@ package Nuklear is
       arg3 : int;
       align : nk_flags;
       arg5 : nk_symbol_type;
-      size : nk_vec2_t) return nk_bool  -- ./include/nuklear.h:3619
+      size : nk_vec2_t) return C_bool  -- ./include/nuklear.h:3619
    with Import => True, 
         Convention => C, 
         External_Name => "nk_menu_begin_symbol_text";
@@ -5616,7 +5615,7 @@ package Nuklear is
       arg2 : Interfaces.C.char_array;
       align : nk_flags;
       arg4 : nk_symbol_type;
-      size : nk_vec2_t) return nk_bool  -- ./include/nuklear.h:3620
+      size : nk_vec2_t) return C_bool  -- ./include/nuklear.h:3620
    with Import => True, 
         Convention => C, 
         External_Name => "nk_menu_begin_symbol_label";
@@ -5625,7 +5624,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
       arg3 : int;
-      align : nk_flags) return nk_bool  -- ./include/nuklear.h:3621
+      align : nk_flags) return C_bool  -- ./include/nuklear.h:3621
    with Import => True, 
         Convention => C, 
         External_Name => "nk_menu_item_text";
@@ -5633,7 +5632,7 @@ package Nuklear is
    function menu_item_label
      (arg1 : access nk_context;
       arg2 : Interfaces.C.char_array;
-      alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3622
+      alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3622
    with Import => True, 
         Convention => C, 
         External_Name => "nk_menu_item_label";
@@ -5642,7 +5641,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : nk_image_t;
       arg3 : Interfaces.C.char_array;
-      alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3623
+      alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3623
    with Import => True, 
         Convention => C, 
         External_Name => "nk_menu_item_image_label";
@@ -5652,7 +5651,7 @@ package Nuklear is
       arg2 : nk_image_t;
       arg3 : Interfaces.C.char_array;
       len : int;
-      alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3624
+      alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3624
    with Import => True, 
         Convention => C, 
         External_Name => "nk_menu_item_image_text";
@@ -5662,7 +5661,7 @@ package Nuklear is
       arg2 : nk_symbol_type;
       arg3 : Interfaces.C.char_array;
       arg4 : int;
-      alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3625
+      alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3625
    with Import => True, 
         Convention => C, 
         External_Name => "nk_menu_item_symbol_text";
@@ -5671,7 +5670,7 @@ package Nuklear is
      (arg1 : access nk_context;
       arg2 : nk_symbol_type;
       arg3 : Interfaces.C.char_array;
-      alignment : nk_flags) return nk_bool  -- ./include/nuklear.h:3626
+      alignment : nk_flags) return C_bool  -- ./include/nuklear.h:3626
    with Import => True, 
         Convention => C, 
         External_Name => "nk_menu_item_symbol_label";
@@ -5768,7 +5767,7 @@ package Nuklear is
         Convention => C, 
         External_Name => "nk_style_set_font";
 
-   function style_set_cursor (arg1 : access nk_context; arg2 : nk_style_cursor) return nk_bool  -- ./include/nuklear.h:3684
+   function style_set_cursor (arg1 : access nk_context; arg2 : nk_style_cursor) return C_bool  -- ./include/nuklear.h:3684
    with Import => True, 
         Convention => C, 
         External_Name => "nk_style_set_cursor";
@@ -5783,7 +5782,7 @@ package Nuklear is
         Convention => C, 
         External_Name => "nk_style_hide_cursor";
 
-   function style_push_font (arg1 : access nk_context; arg2 : access constant nk_user_font) return nk_bool  -- ./include/nuklear.h:3688
+   function style_push_font (arg1 : access nk_context; arg2 : access constant nk_user_font) return C_bool  -- ./include/nuklear.h:3688
    with Import => True, 
         Convention => C, 
         External_Name => "nk_style_push_font";
@@ -5791,7 +5790,7 @@ package Nuklear is
    function style_push_float
      (arg1 : access nk_context;
       arg2 : access float;
-      arg3 : float) return nk_bool  -- ./include/nuklear.h:3689
+      arg3 : float) return C_bool  -- ./include/nuklear.h:3689
    with Import => True, 
         Convention => C, 
         External_Name => "nk_style_push_float";
@@ -5799,7 +5798,7 @@ package Nuklear is
    function style_push_vec2
      (arg1 : access nk_context;
       arg2 : access nk_vec2_t;
-      arg3 : nk_vec2_t) return nk_bool  -- ./include/nuklear.h:3690
+      arg3 : nk_vec2_t) return C_bool  -- ./include/nuklear.h:3690
    with Import => True, 
         Convention => C, 
         External_Name => "nk_style_push_vec2";
@@ -5808,7 +5807,7 @@ package Nuklear is
    function style_push_style_item
      (arg1 : access nk_context;
       arg2 : access nk_style_item;
-      arg3 : nk_style_item) return nk_bool  -- ./include/nuklear.h:3691
+      arg3 : nk_style_item) return C_bool  -- ./include/nuklear.h:3691
    with Import => True, 
         Convention => C, 
         External_Name => "nk_style_push_style_item";
@@ -5816,7 +5815,7 @@ package Nuklear is
    function style_push_flags
      (arg1 : access nk_context;
       arg2 : access nk_flags;
-      arg3 : nk_flags) return nk_bool  -- ./include/nuklear.h:3692
+      arg3 : nk_flags) return C_bool  -- ./include/nuklear.h:3692
    with Import => True, 
         Convention => C, 
         External_Name => "nk_style_push_flags";
@@ -5824,37 +5823,37 @@ package Nuklear is
    function style_push_color
      (arg1 : access nk_context;
       arg2 : access nk_color;
-      arg3 : nk_color) return nk_bool  -- ./include/nuklear.h:3693
+      arg3 : nk_color) return C_bool  -- ./include/nuklear.h:3693
    with Import => True, 
         Convention => C, 
         External_Name => "nk_style_push_color";
 
-   function style_pop_font (arg1 : access nk_context) return nk_bool  -- ./include/nuklear.h:3695
+   function style_pop_font (arg1 : access nk_context) return C_bool  -- ./include/nuklear.h:3695
    with Import => True, 
         Convention => C, 
         External_Name => "nk_style_pop_font";
 
-   function style_pop_float (arg1 : access nk_context) return nk_bool  -- ./include/nuklear.h:3696
+   function style_pop_float (arg1 : access nk_context) return C_bool  -- ./include/nuklear.h:3696
    with Import => True, 
         Convention => C, 
         External_Name => "nk_style_pop_float";
 
-   function style_pop_vec2 (arg1 : access nk_context) return nk_bool  -- ./include/nuklear.h:3697
+   function style_pop_vec2 (arg1 : access nk_context) return C_bool  -- ./include/nuklear.h:3697
    with Import => True, 
         Convention => C, 
         External_Name => "nk_style_pop_vec2";
 
-   function style_pop_style_item (arg1 : access nk_context) return nk_bool  -- ./include/nuklear.h:3698
+   function style_pop_style_item (arg1 : access nk_context) return C_bool  -- ./include/nuklear.h:3698
    with Import => True, 
         Convention => C, 
         External_Name => "nk_style_pop_style_item";
 
-   function style_pop_flags (arg1 : access nk_context) return nk_bool  -- ./include/nuklear.h:3699
+   function style_pop_flags (arg1 : access nk_context) return C_bool  -- ./include/nuklear.h:3699
    with Import => True, 
         Convention => C, 
         External_Name => "nk_style_pop_flags";
 
-   function style_pop_color (arg1 : access nk_context) return nk_bool  -- ./include/nuklear.h:3700
+   function style_pop_color (arg1 : access nk_context) return C_bool  -- ./include/nuklear.h:3700
    with Import => True, 
         Convention => C, 
         External_Name => "nk_style_pop_color";
@@ -6221,7 +6220,7 @@ package Nuklear is
         Convention => C, 
         External_Name => "nk_image_id";
 
-   function image_is_subimage (img : access constant nk_image_t) return nk_bool  -- ./include/nuklear.h:3775
+   function image_is_subimage (img : access constant nk_image_t) return C_bool  -- ./include/nuklear.h:3775
    with Import => True, 
         Convention => C, 
         External_Name => "nk_image_is_subimage";
@@ -7032,7 +7031,7 @@ package Nuklear is
    with Convention => C;  -- ./include/nuklear.h:4205
 
    type nk_buffer_marker is record
-      active : aliased nk_bool;  -- ./include/nuklear.h:4212
+      active : aliased C_bool;  -- ./include/nuklear.h:4212
       offset : aliased nk_size;  -- ./include/nuklear.h:4213
    end record
    with Convention => C_Pass_By_Copy;  -- ./include/nuklear.h:4211
@@ -7464,37 +7463,37 @@ package Nuklear is
    with Convention => C_Pass_By_Copy;  -- ./include/nuklear.h:4380
 
   -- filter function  
-   function filter_default (arg1 : access constant nk_text_edit; unicode : nk_rune) return nk_bool  -- ./include/nuklear.h:4401
+   function filter_default (arg1 : access constant nk_text_edit; unicode : nk_rune) return C_bool  -- ./include/nuklear.h:4401
    with Import => True, 
         Convention => C, 
         External_Name => "nk_filter_default";
 
-   function filter_ascii (arg1 : access constant nk_text_edit; unicode : nk_rune) return nk_bool  -- ./include/nuklear.h:4402
+   function filter_ascii (arg1 : access constant nk_text_edit; unicode : nk_rune) return C_bool  -- ./include/nuklear.h:4402
    with Import => True, 
         Convention => C, 
         External_Name => "nk_filter_ascii";
 
-   function filter_float (arg1 : access constant nk_text_edit; unicode : nk_rune) return nk_bool  -- ./include/nuklear.h:4403
+   function filter_float (arg1 : access constant nk_text_edit; unicode : nk_rune) return C_bool  -- ./include/nuklear.h:4403
    with Import => True, 
         Convention => C, 
         External_Name => "nk_filter_float";
 
-   function filter_decimal (arg1 : access constant nk_text_edit; unicode : nk_rune) return nk_bool  -- ./include/nuklear.h:4404
+   function filter_decimal (arg1 : access constant nk_text_edit; unicode : nk_rune) return C_bool  -- ./include/nuklear.h:4404
    with Import => True, 
         Convention => C, 
         External_Name => "nk_filter_decimal";
 
-   function filter_hex (arg1 : access constant nk_text_edit; unicode : nk_rune) return nk_bool  -- ./include/nuklear.h:4405
+   function filter_hex (arg1 : access constant nk_text_edit; unicode : nk_rune) return C_bool  -- ./include/nuklear.h:4405
    with Import => True, 
         Convention => C, 
         External_Name => "nk_filter_hex";
 
-   function filter_oct (arg1 : access constant nk_text_edit; unicode : nk_rune) return nk_bool  -- ./include/nuklear.h:4406
+   function filter_oct (arg1 : access constant nk_text_edit; unicode : nk_rune) return C_bool  -- ./include/nuklear.h:4406
    with Import => True, 
         Convention => C, 
         External_Name => "nk_filter_oct";
 
-   function filter_binary (arg1 : access constant nk_text_edit; unicode : nk_rune) return nk_bool  -- ./include/nuklear.h:4407
+   function filter_binary (arg1 : access constant nk_text_edit; unicode : nk_rune) return C_bool  -- ./include/nuklear.h:4407
    with Import => True, 
         Convention => C, 
         External_Name => "nk_filter_binary";
@@ -7552,7 +7551,7 @@ package Nuklear is
         Convention => C, 
         External_Name => "nk_textedit_select_all";
 
-   function textedit_cut (arg1 : access nk_text_edit) return nk_bool  -- ./include/nuklear.h:4420
+   function textedit_cut (arg1 : access nk_text_edit) return C_bool  -- ./include/nuklear.h:4420
    with Import => True, 
         Convention => C, 
         External_Name => "nk_textedit_cut";
@@ -7560,7 +7559,7 @@ package Nuklear is
    function textedit_paste
      (arg1 : access nk_text_edit;
       arg2 : Interfaces.C.char_array;
-      len : int) return nk_bool  -- ./include/nuklear.h:4421
+      len : int) return C_bool  -- ./include/nuklear.h:4421
    with Import => True, 
         Convention => C, 
         External_Name => "nk_textedit_paste";
@@ -8085,7 +8084,7 @@ package Nuklear is
   -- * =============================================================== 
 
    type nk_mouse_button is record
-      down : aliased nk_bool;  -- ./include/nuklear.h:4704
+      down : aliased C_bool;  -- ./include/nuklear.h:4704
       clicked : aliased unsigned;  -- ./include/nuklear.h:4705
       clicked_pos : aliased nk_vec2_t;  -- ./include/nuklear.h:4706
    end record
@@ -8105,7 +8104,7 @@ package Nuklear is
    with Convention => C_Pass_By_Copy;  -- ./include/nuklear.h:4708
 
    type nk_key is record
-      down : aliased nk_bool;  -- ./include/nuklear.h:4723
+      down : aliased C_bool;  -- ./include/nuklear.h:4723
       clicked : aliased unsigned;  -- ./include/nuklear.h:4724
    end record
    with Convention => C_Pass_By_Copy;  -- ./include/nuklear.h:4722
@@ -8125,7 +8124,7 @@ package Nuklear is
    end record
    with Convention => C_Pass_By_Copy;  -- ./include/nuklear.h:4732
 
-   function input_has_mouse_click (arg1 : access constant nk_input; arg2 : nk_buttons) return nk_bool  -- ./include/nuklear.h:4737
+   function input_has_mouse_click (arg1 : access constant nk_input; arg2 : nk_buttons) return C_bool  -- ./include/nuklear.h:4737
    with Import => True, 
         Convention => C, 
         External_Name => "nk_input_has_mouse_click";
@@ -8133,7 +8132,7 @@ package Nuklear is
    function input_has_mouse_click_in_rect
      (arg1 : access constant nk_input;
       arg2 : nk_buttons;
-      arg3 : nk_rect_t) return nk_bool  -- ./include/nuklear.h:4738
+      arg3 : nk_rect_t) return C_bool  -- ./include/nuklear.h:4738
    with Import => True, 
         Convention => C, 
         External_Name => "nk_input_has_mouse_click_in_rect";
@@ -8141,7 +8140,7 @@ package Nuklear is
    function input_has_mouse_click_in_button_rect
      (arg1 : access constant nk_input;
       arg2 : nk_buttons;
-      arg3 : nk_rect_t) return nk_bool  -- ./include/nuklear.h:4739
+      arg3 : nk_rect_t) return C_bool  -- ./include/nuklear.h:4739
    with Import => True, 
         Convention => C, 
         External_Name => "nk_input_has_mouse_click_in_button_rect";
@@ -8150,7 +8149,7 @@ package Nuklear is
      (arg1 : access constant nk_input;
       arg2 : nk_buttons;
       arg3 : nk_rect_t;
-      down : nk_bool) return nk_bool  -- ./include/nuklear.h:4740
+      down : C_bool) return C_bool  -- ./include/nuklear.h:4740
    with Import => True, 
         Convention => C, 
         External_Name => "nk_input_has_mouse_click_down_in_rect";
@@ -8158,7 +8157,7 @@ package Nuklear is
    function input_is_mouse_click_in_rect
      (arg1 : access constant nk_input;
       arg2 : nk_buttons;
-      arg3 : nk_rect_t) return nk_bool  -- ./include/nuklear.h:4741
+      arg3 : nk_rect_t) return C_bool  -- ./include/nuklear.h:4741
    with Import => True, 
         Convention => C, 
         External_Name => "nk_input_is_mouse_click_in_rect";
@@ -8167,22 +8166,22 @@ package Nuklear is
      (i : access constant nk_input;
       id : nk_buttons;
       b : nk_rect_t;
-      down : nk_bool) return nk_bool  -- ./include/nuklear.h:4742
+      down : C_bool) return C_bool  -- ./include/nuklear.h:4742
    with Import => True, 
         Convention => C, 
         External_Name => "nk_input_is_mouse_click_down_in_rect";
 
-   function input_any_mouse_click_in_rect (arg1 : access constant nk_input; arg2 : nk_rect_t) return nk_bool  -- ./include/nuklear.h:4743
+   function input_any_mouse_click_in_rect (arg1 : access constant nk_input; arg2 : nk_rect_t) return C_bool  -- ./include/nuklear.h:4743
    with Import => True, 
         Convention => C, 
         External_Name => "nk_input_any_mouse_click_in_rect";
 
-   function input_is_mouse_prev_hovering_rect (arg1 : access constant nk_input; arg2 : nk_rect_t) return nk_bool  -- ./include/nuklear.h:4744
+   function input_is_mouse_prev_hovering_rect (arg1 : access constant nk_input; arg2 : nk_rect_t) return C_bool  -- ./include/nuklear.h:4744
    with Import => True, 
         Convention => C, 
         External_Name => "nk_input_is_mouse_prev_hovering_rect";
 
-   function input_is_mouse_hovering_rect (arg1 : access constant nk_input; arg2 : nk_rect_t) return nk_bool  -- ./include/nuklear.h:4745
+   function input_is_mouse_hovering_rect (arg1 : access constant nk_input; arg2 : nk_rect_t) return C_bool  -- ./include/nuklear.h:4745
    with Import => True, 
         Convention => C, 
         External_Name => "nk_input_is_mouse_hovering_rect";
@@ -8190,37 +8189,37 @@ package Nuklear is
    function input_mouse_clicked
      (arg1 : access constant nk_input;
       arg2 : nk_buttons;
-      arg3 : nk_rect_t) return nk_bool  -- ./include/nuklear.h:4746
+      arg3 : nk_rect_t) return C_bool  -- ./include/nuklear.h:4746
    with Import => True, 
         Convention => C, 
         External_Name => "nk_input_mouse_clicked";
 
-   function input_is_mouse_down (arg1 : access constant nk_input; arg2 : nk_buttons) return nk_bool  -- ./include/nuklear.h:4747
+   function input_is_mouse_down (arg1 : access constant nk_input; arg2 : nk_buttons) return C_bool  -- ./include/nuklear.h:4747
    with Import => True, 
         Convention => C, 
         External_Name => "nk_input_is_mouse_down";
 
-   function input_is_mouse_pressed (arg1 : access constant nk_input; arg2 : nk_buttons) return nk_bool  -- ./include/nuklear.h:4748
+   function input_is_mouse_pressed (arg1 : access constant nk_input; arg2 : nk_buttons) return C_bool  -- ./include/nuklear.h:4748
    with Import => True, 
         Convention => C, 
         External_Name => "nk_input_is_mouse_pressed";
 
-   function input_is_mouse_released (arg1 : access constant nk_input; arg2 : nk_buttons) return nk_bool  -- ./include/nuklear.h:4749
+   function input_is_mouse_released (arg1 : access constant nk_input; arg2 : nk_buttons) return C_bool  -- ./include/nuklear.h:4749
    with Import => True, 
         Convention => C, 
         External_Name => "nk_input_is_mouse_released";
 
-   function input_is_key_pressed (arg1 : access constant nk_input; arg2 : nk_keys) return nk_bool  -- ./include/nuklear.h:4750
+   function input_is_key_pressed (arg1 : access constant nk_input; arg2 : nk_keys) return C_bool  -- ./include/nuklear.h:4750
    with Import => True, 
         Convention => C, 
         External_Name => "nk_input_is_key_pressed";
 
-   function input_is_key_released (arg1 : access constant nk_input; arg2 : nk_keys) return nk_bool  -- ./include/nuklear.h:4751
+   function input_is_key_released (arg1 : access constant nk_input; arg2 : nk_keys) return C_bool  -- ./include/nuklear.h:4751
    with Import => True, 
         Convention => C, 
         External_Name => "nk_input_is_key_released";
 
-   function input_is_key_down (arg1 : access constant nk_input; arg2 : nk_keys) return nk_bool  -- ./include/nuklear.h:4752
+   function input_is_key_down (arg1 : access constant nk_input; arg2 : nk_keys) return C_bool  -- ./include/nuklear.h:4752
    with Import => True, 
         Convention => C, 
         External_Name => "nk_input_is_key_down";
@@ -9107,7 +9106,7 @@ package Nuklear is
       parent : aliased nk_size;  -- ./include/nuklear.h:5451
       last : aliased nk_size;  -- ./include/nuklear.h:5452
       c_end : aliased nk_size;  -- ./include/nuklear.h:5453
-      active : aliased nk_bool;  -- ./include/nuklear.h:5454
+      active : aliased C_bool;  -- ./include/nuklear.h:5454
    end record
    with Convention => C_Pass_By_Copy;  -- ./include/nuklear.h:5449
 
@@ -9168,7 +9167,7 @@ package Nuklear is
       c_type : aliased nk_panel_type;  -- ./include/nuklear.h:5509
       buf : aliased nk_popup_buffer;  -- ./include/nuklear.h:5510
       name : aliased nk_hash;  -- ./include/nuklear.h:5511
-      active : aliased nk_bool;  -- ./include/nuklear.h:5512
+      active : aliased C_bool;  -- ./include/nuklear.h:5512
       combo_count : aliased unsigned;  -- ./include/nuklear.h:5513
       con_count : aliased unsigned;  -- ./include/nuklear.h:5514
       con_old : aliased unsigned;  -- ./include/nuklear.h:5514
@@ -9223,7 +9222,7 @@ package Nuklear is
       popup : aliased nk_popup_state;  -- ./include/nuklear.h:5559
       edit : aliased nk_edit_state;  -- ./include/nuklear.h:5560
       scrolled : aliased unsigned;  -- ./include/nuklear.h:5561
-      widgets_disabled : aliased nk_bool;  -- ./include/nuklear.h:5562
+      widgets_disabled : aliased C_bool;  -- ./include/nuklear.h:5562
       tables : access nk_table;  -- ./include/nuklear.h:5564
       table_count : aliased unsigned;  -- ./include/nuklear.h:5565
       next : access nk_window;  -- ./include/nuklear.h:5568
@@ -12124,13 +12123,13 @@ package Nuklear is
   --/// - 2021/03/17 (4.07.1) - Fix warning about unused parameter
   --/// - 2021/03/17 (4.07.0) - Fix nk_property hover bug
   --/// - 2021/03/15 (4.06.4) - Change nk_propertyi back to int
-  --/// - 2021/03/15 (4.06.3) - Update documentation for functions that now return nk_bool
+  --/// - 2021/03/15 (4.06.3) - Update documentation for functions that now return C_bool
   --/// - 2020/12/19 (4.06.2) - Fix additional C++ style comments which are not allowed in ISO C90.
   --/// - 2020/10/11 (4.06.1) - Fix C++ style comments which are not allowed in ISO C90.
-  --/// - 2020/10/07 (4.06.0) - Fix nk_combo return type wrongly changed to nk_bool
+  --/// - 2020/10/07 (4.06.0) - Fix nk_combo return type wrongly changed to C_bool
   --/// - 2020/09/05 (4.05.0) - Use the nk_font_atlas allocator for stb_truetype memory management.
-  --/// - 2020/09/04 (4.04.1) - Replace every boolean int by nk_bool
-  --/// - 2020/09/04 (4.04.0) - Add nk_bool with INCLUDE_STANDARD_BOOL
+  --/// - 2020/09/04 (4.04.1) - Replace every boolean int by C_bool
+  --/// - 2020/09/04 (4.04.0) - Add C_bool with INCLUDE_STANDARD_BOOL
   --/// - 2020/06/13 (4.03.1) - Fix nk_pool allocation sizes.
   --/// - 2020/06/04 (4.03.0) - Made nk_combo header symbols optional.
   --/// - 2020/05/27 (4.02.5) - Fix nk_do_edit: Keep scroll position when re-activating edit widget.
