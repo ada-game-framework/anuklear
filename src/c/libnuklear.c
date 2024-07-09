@@ -15,11 +15,11 @@
 // #define NK_INCLUDE_COMMAND_USERDATA
 
 #define NK_IMPLEMENTATION
-#include "../Nuklear/nuklear.h"
+#include "../include/nuklear.h"
 
 #if defined(RENDER_SDL)
 
 #define NK_SDL_RENDERER_IMPLEMENTATION
-#include "../Nuklear/demo/sdl_renderer/nuklear_sdl_renderer.h"
+#include "../include/nuklear_sdl_renderer.h"
 
 #endif
