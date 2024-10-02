@@ -102,44 +102,44 @@ mv nuklear_h.ads src/nuklear.ads
 
 ## Renderer
 
-gcc -fdump-ada-spec-slim -C -c ./include/nuklear_sdl_renderer.h
+# gcc -fdump-ada-spec-slim -C -c ./include/nuklear_sdl_renderer.h
 
-# sed -i 's/ use Interfaces.C;//' nuklear_sdl_renderer_h.ads
+# # sed -i 's/ use Interfaces.C;//' nuklear_sdl_renderer_h.ads
 
-sed -i '/package nuklear_sdl_renderer_h is/i \
-with SDL.C_Pointers; \
-with SDL.Video.Windows; \
-with SDL.Video.Renderers; \
-with SDL.Events.Events; \
-with Nuklear; use Nuklear; \
-    ' nuklear_sdl_renderer_h.ads
+# sed -i '/package nuklear_sdl_renderer_h is/i \
+# with SDL.C_Pointers; \
+# with SDL.Video.Windows; \
+# with SDL.Video.Renderers; \
+# with SDL.Events.Events; \
+# with Nuklear; use Nuklear; \
+#     ' nuklear_sdl_renderer_h.ads
 
-sed -i '/type nk_context/d ' nuklear_sdl_renderer_h.ads
-sed -i '/type nk_anti_aliasing/d ' nuklear_sdl_renderer_h.ads
+# sed -i '/type nk_context/d ' nuklear_sdl_renderer_h.ads
+# sed -i '/type nk_anti_aliasing/d ' nuklear_sdl_renderer_h.ads
 
-sed -i 's/access SDL2_SDL_video_h.SDL_Window;/SDL.C_Pointers.Windows_Pointer;/' nuklear_sdl_renderer_h.ads
-sed -i 's/access SDL2_SDL_render_h.SDL_Renderer)/SDL.C_Pointers.Renderer_Pointer)/' nuklear_sdl_renderer_h.ads
-sed -i 's/access SDL2_SDL_events_h.SDL_Event)/in out SDL.Events.Events.Events)/' nuklear_sdl_renderer_h.ads
-sed -i 's/atlas : System.Address)/atlas : access nk_font_atlas)/' nuklear_sdl_renderer_h.ads
-sed -i 's/type nk_font_atlas;//' nuklear_sdl_renderer_h.ads
+# sed -i 's/access SDL2_SDL_video_h.SDL_Window;/SDL.C_Pointers.Windows_Pointer;/' nuklear_sdl_renderer_h.ads
+# sed -i 's/access SDL2_SDL_render_h.SDL_Renderer)/SDL.C_Pointers.Renderer_Pointer)/' nuklear_sdl_renderer_h.ads
+# sed -i 's/access SDL2_SDL_events_h.SDL_Event)/in out SDL.Events.Events.Events)/' nuklear_sdl_renderer_h.ads
+# sed -i 's/atlas : System.Address)/atlas : access nk_font_atlas)/' nuklear_sdl_renderer_h.ads
+# sed -i 's/type nk_font_atlas;//' nuklear_sdl_renderer_h.ads
 
-sed -i 's/limited with SDL2_SDL_video_h;//' nuklear_sdl_renderer_h.ads
-sed -i 's/limited with SDL2_SDL_render_h;//' nuklear_sdl_renderer_h.ads
-sed -i 's/limited with SDL2_SDL_events_h;//' nuklear_sdl_renderer_h.ads
+# sed -i 's/limited with SDL2_SDL_video_h;//' nuklear_sdl_renderer_h.ads
+# sed -i 's/limited with SDL2_SDL_render_h;//' nuklear_sdl_renderer_h.ads
+# sed -i 's/limited with SDL2_SDL_events_h;//' nuklear_sdl_renderer_h.ads
 
-sed -i 's/function nk_/function /' nuklear_sdl_renderer_h.ads
-sed -i 's/procedure nk_/procedure /' nuklear_sdl_renderer_h.ads
+# sed -i 's/function nk_/function /' nuklear_sdl_renderer_h.ads
+# sed -i 's/procedure nk_/procedure /' nuklear_sdl_renderer_h.ads
 
-sed -i 's/nuklear_sdl_renderer_h/SDL.Nuklear.Renderer/' nuklear_sdl_renderer_h.ads
-sed -i 's/return int/return Interfaces.C.int/' nuklear_sdl_renderer_h.ads
+# sed -i 's/nuklear_sdl_renderer_h/SDL.Nuklear.Renderer/' nuklear_sdl_renderer_h.ads
+# sed -i 's/return int/return Interfaces.C.int/' nuklear_sdl_renderer_h.ads
 
-sed -i 's/sdl_font_stash_begin (atlas : access nk_font_atlas)/sdl_font_stash_begin (atlas : in out font_atlas_access)/' nuklear_sdl_renderer_h.ads
+# sed -i 's/sdl_font_stash_begin (atlas : access nk_font_atlas)/sdl_font_stash_begin (atlas : in out font_atlas_access)/' nuklear_sdl_renderer_h.ads
 
-sed -i '/function sdl_init (/i \
-   \
-   function Initialise \
-     (Window   : SDL.Video.Windows.Window; \
-      Renderer : SDL.Video.Renderers.Renderer) return access nk_context; \
-      ' nuklear_sdl_renderer_h.ads
+# sed -i '/function sdl_init (/i \
+#    \
+#    function Initialise \
+#      (Window   : SDL.Video.Windows.Window; \
+#       Renderer : SDL.Video.Renderers.Renderer) return access nk_context; \
+#       ' nuklear_sdl_renderer_h.ads
 
-mv nuklear_sdl_renderer_h.ads src/renderer/sdl2/sdl-nuklear-renderer.ads
+# mv nuklear_sdl_renderer_h.ads src/renderer/sdl2/sdl-nuklear-renderer.ads
