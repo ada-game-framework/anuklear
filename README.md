@@ -6,6 +6,7 @@ Ada 2022 language bindings to the Nuklear UI library.
 
 1. Currently, to build the lib, you need to comment out the ```private``` keyword from the ```SDL.C_Pointers``` package.
 2. This only binds the SDL renderer as this is early stages.
+3. They've changed the source in an compatible way with what I was doing. They now set a location for the SDL.h file, you might need to change this.
 
 ## What's next?
 
