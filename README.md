@@ -21,3 +21,12 @@ See [LICENCE](./LICENCE) file.
 ## [Current version](http://www.semver.org)
 
 See [alire.toml](./alire.toml)
+
+## TODO's
+
+* [ ] Create thick bindings, hiding the C API.
+* [ ] Port Renderer to SDLAda.
+* [ ] Need a clean way to handle the SDL header to the C source.
+* [ ] Port the entire library so as to not depend on C at all.
+
+
